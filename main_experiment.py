@@ -110,6 +110,8 @@ for this_trial in main_loop:
     thisExp.addData('iti_intended_duration', round(iti_duration, 2))
     
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_ITI_START)
+    iti_start_time = core.monotonicClock.getTime()
+    thisExp.addData('iti_start_time', iti_start_time)
     print(f"ITI routine started. TRIG_ITI_START ({config.TRIG_ITI_START.hex()}) SET ON (queued).")
 
     fixation_cross = visual.TextStim(win, text='+', height=0.1, color='white')
@@ -120,6 +122,9 @@ for this_trial in main_loop:
         if event.getKeys(keyList=['escape']): core.quit()
         
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
+    iti_end_time = core.monotonicClock.getTime()
+    thisExp.addData('iti_end_time', iti_end_time)
+    thisExp.addData('iti_actual_duration', round(iti_end_time - iti_start_time, 4))
     print(f"ITI ended. Sent TRIG_RESET for {config.TRIG_ITI_START.hex()}.")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -139,6 +144,8 @@ for this_trial in main_loop:
         surfaces=[current_surface]
     )
     thermode.trigger()
+    stim_start_time = core.monotonicClock.getTime()
+    thisExp.addData('stim_start_time', stim_start_time)
     print(f"Trial {current_loop_index+1}: Temp={current_temp}°C, Surface={current_surface}. Thermode triggered.")
 
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_STIM_ON)
@@ -158,11 +165,16 @@ for this_trial in main_loop:
     thisExp.addData('stim_offset_trigger_time', stim_offset_trigger_time)
     print(f"TRIG_STIM_OFF ({config.TRIG_STIM_OFF.hex()}) pulsed and all lines reset.")
     thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_trigger_time, 4))
+    stim_end_time = core.monotonicClock.getTime()
+    thisExp.addData('stim_end_time', stim_end_time)
+    thisExp.addData('stim_routine_actual_duration', round(stim_end_time - stim_start_time, 4))
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pain Question Routine
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
+    pain_q_start_time = core.monotonicClock.getTime()
+    thisExp.addData('pain_q_start_time', pain_q_start_time)
     print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
 
     pain_question_stim = visual.TextStim(win, text="Était-ce douloureux? (o/n)", height=0.07, color='white')
@@ -185,6 +197,9 @@ for this_trial in main_loop:
     thisExp.addData('pain_question_response_coded', pain_response)
     
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
+    pain_q_end_time = core.monotonicClock.getTime()
+    thisExp.addData('pain_q_end_time', pain_q_end_time)
+    thisExp.addData('pain_q_actual_duration', round(pain_q_end_time - pain_q_start_time, 4))
     print(f"Pain question ended. Sent TRIG_RESET for {config.TRIG_PAIN_Q_ON.hex()}.")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -192,6 +207,8 @@ for this_trial in main_loop:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Begin Routine
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
+    vas_start_time = core.monotonicClock.getTime()
+    thisExp.addData('vas_start_time', vas_start_time)
     print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
     
     vas_rating_trace, vas_time_trace = [], []
@@ -279,6 +296,9 @@ for this_trial in main_loop:
     thisExp.addData('vas_initial_position', round(initial_pos, 2))
 
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
+    vas_end_time = core.monotonicClock.getTime()
+    thisExp.addData('vas_end_time', vas_end_time)
+    thisExp.addData('vas_actual_duration', round(vas_end_time - vas_start_time, 4))
     print(f"VAS ended. Sent TRIG_RESET for {config.TRIG_VAS_ON.hex()}.")
 
     # --- Append data to collector for final saving ---
@@ -289,6 +309,14 @@ for this_trial in main_loop:
     exp_data_collector['vas_final_coded_rating'].append(round(final_rating_coded, 2))
     exp_data_collector['vas_traces'].append(vas_trace_coded)
     exp_data_collector['vas_times'].append(vas_time_trace)
+    exp_data_collector['iti_start_time'].append(iti_start_time)
+    exp_data_collector['iti_end_time'].append(iti_end_time)
+    exp_data_collector['stim_start_time'].append(stim_start_time)
+    exp_data_collector['stim_end_time'].append(stim_end_time)
+    exp_data_collector['pain_q_start_time'].append(pain_q_start_time)
+    exp_data_collector['pain_q_end_time'].append(pain_q_end_time)
+    exp_data_collector['vas_start_time'].append(vas_start_time)
+    exp_data_collector['vas_end_time'].append(vas_end_time)
     
     thisExp.nextEntry()
 

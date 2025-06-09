@@ -9,7 +9,11 @@ def create_data_collector():
     return {
         'trial_number': [], 'stimulus_temp': [], 'selected_surface': [],
         'pain_binary_coded': [], 'vas_final_coded_rating': [],
-        'vas_traces': [], 'vas_times': []
+        'vas_traces': [], 'vas_times': [],
+        'iti_start_time': [], 'iti_end_time': [],
+        'stim_start_time': [], 'stim_end_time': [],
+        'pain_q_start_time': [], 'pain_q_end_time': [],
+        'vas_start_time': [], 'vas_end_time': []
     }
 
 def save_all_data(exp_info, exp_name, data, this_dir):
@@ -30,7 +34,15 @@ def save_all_data(exp_info, exp_name, data, this_dir):
             'stimulus_temp': data['stimulus_temp'],
             'selected_surface': data['selected_surface'],
             'pain_binary_coded': data['pain_binary_coded'],
-            'vas_final_coded_rating': data['vas_final_coded_rating']
+            'vas_final_coded_rating': data['vas_final_coded_rating'],
+            'iti_start_time': data['iti_start_time'],
+            'iti_end_time': data['iti_end_time'],
+            'stim_start_time': data['stim_start_time'],
+            'stim_end_time': data['stim_end_time'],
+            'pain_q_start_time': data['pain_q_start_time'],
+            'pain_q_end_time': data['pain_q_end_time'],
+            'vas_start_time': data['vas_start_time'],
+            'vas_end_time': data['vas_end_time']
         })
         summary_filename = os.path.join(participant_dir, f"{base_filename}_TrialSummary.csv")
         summary_df.to_csv(summary_filename, index=False, float_format='%.2f', na_rep='NA')
