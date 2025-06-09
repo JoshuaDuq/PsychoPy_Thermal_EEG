@@ -93,11 +93,10 @@ if rcs:
         thisExp.addData('eeg_recording_status', f'failed_rcs_error: {e}')
 else:
     thisExp.addData('eeg_recording_status', 'skipped_rcs_not_available')
-
-
+    
 # --- Main Experiment Loop ---
 main_loop = data.TrialHandler(
-    nReps=num_trials,
+    nReps=1,
     method='sequential',
     originPath=-1,
     trialList=[{'idx': i} for i in range(num_trials)],
