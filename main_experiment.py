@@ -110,11 +110,15 @@ while continue_routine:
         core.quit()
     if 'space' in keys:
         continue_routine = False
-
-
+        
 # --- Main Experiment Loop ---
-main_loop = data.TrialHandler(nReps=num_trials, method='sequential',
-                              originPath=-1, trialList=[{'idx':i for i in range(num_trials)}], name='trials_loop')
+main_loop = data.TrialHandler(
+    nReps=1,
+    method='sequential',
+    originPath=-1,
+    trialList=[{'idx': i} for i in range(num_trials)],
+    name='trials_loop'
+)
 thisExp.addLoop(main_loop)
 
 for this_trial in main_loop:
@@ -159,17 +163,13 @@ for this_trial in main_loop:
         dur_ms=dur_ms,
         surfaces=[current_surface]
     )
+
     thermode.trigger()
     print(f"Trial {current_loop_index+1}: Temp={current_temp}°C, Surface={current_surface}. Thermode triggered.")
 
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_STIM_ON)
-    stim_onset_trigger_time = win.getFutureFlipTime(clock='ptb')
-    thisExp.addData('stim_onset_trigger_time_actual', stim_onset_trigger_time)
-    print(f"TRIG_STIM_ON ({config.TRIG_STIM_ON.hex()}) SET ON (queued).")
-
     stim_duration = config.RAMP_UP_SECS_CONST + config.STIM_HOLD_DURATION_SECS + config.RAMP_DOWN_SECS_CONST
     stim_timer = core.CountdownTimer(stim_duration)
-    while stim_timer.getTime() > 0:
+        while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
         keys = event.getKeys(keyList=['space', 'escape'])
@@ -177,19 +177,31 @@ for this_trial in main_loop:
             core.quit()
         if 'space' in keys:
             break
+            
+    print(f"TRIG_STIM_ON ({config.TRIG_STIM_ON.hex()}) SET ON (queued).")
 
+    stim_onset_time = {'t': None}
+
+    def log_stim_onset():
+        stim_onset_time['t'] = core.monotonicClock.getTime()
+        triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
+
+    win.callOnFlip(log_stim_onset)
+    while stim_timer.getTime() > 0:
+        fixation_cross.draw()
+        win.flip()
+        if event.getKeys(keyList=['escape']): core.quit()
+          
     triggering.send_event_pulse(trigger_port, config.TRIG_STIM_OFF, config.TRIG_RESET)
     stim_offset_trigger_time = core.getTime()
     thisExp.addData('stim_offset_trigger_time', stim_offset_trigger_time)
+    thisExp.addData('stim_onset_trigger_time_actual', stim_onset_time['t'])
     print(f"TRIG_STIM_OFF ({config.TRIG_STIM_OFF.hex()}) pulsed and all lines reset.")
-    thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_trigger_time, 4))
+    thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_time['t'], 4))
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pain Question Routine
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
-    print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
-
     pain_question_stim = visual.TextStim(
         win,
         text="Avez-vous ressenti de la douleur ?\nO = Oui   N = Non",
@@ -198,6 +210,9 @@ for this_trial in main_loop:
     )
     painKey = keyboard.Keyboard()
     painKey.clearEvents()
+    
+    print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
+    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
     
     continue_routine = True
     while continue_routine:
@@ -221,9 +236,6 @@ for this_trial in main_loop:
     # VAS Routine
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Begin Routine
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
-    print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
-    
     vas_rating_trace, vas_time_trace = [], []
     current_pos = round(np.random.uniform(0, 100), 1)
     initial_pos = current_pos
@@ -244,12 +256,15 @@ for this_trial in main_loop:
     instr = visual.TextStim(win, text=instr_txt, pos=(0, 0.2), height=0.05)
     anchor_L = visual.TextStim(win, text=left_txt, pos=(-0.5, -0.06), height=0.035, anchorHoriz='center')
     anchor_R = visual.TextStim(win, text=right_txt, pos=(0.5, -0.06), height=0.035, anchorHoriz='center')
-    
+
     kb.clearEvents()
     event.clearEvents(eventType='keyboard')
-    
-    # Each Frame Loop
+
+    print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
     continue_routine = True
+    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
+
+    # Each Frame Loop
     while continue_routine:
         frame_dur = win.monitorFramePeriod if hasattr(win, 'monitorFramePeriod') and win.monitorFramePeriod else 1/60.0
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur

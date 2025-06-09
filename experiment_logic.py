@@ -12,7 +12,7 @@ def generate_temperature_order(temps, repeats):
     return order
 
 def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_rate):
-    """Pre-calculates rise and return rates for each possible temperature."""
+    """Precalculates rise and return rates for each possible temperature."""
     rates = {}
     for temp_val in temps:
         temp_diff = abs(temp_val - baseline)
