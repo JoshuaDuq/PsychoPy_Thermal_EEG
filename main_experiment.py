@@ -130,13 +130,13 @@ for this_trial in main_loop:
     iti_duration = np.random.uniform(*config.ITI_DURATION_RANGE)
     thisExp.addData('iti_intended_duration', round(iti_duration, 2))
     
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_ITI_START)
     iti_start_time = core.monotonicClock.getTime()
     thisExp.addData('iti_start_time', iti_start_time)
-    print(f"ITI routine started. TRIG_ITI_START ({config.TRIG_ITI_START.hex()}) SET ON (queued).")
 
     fixation_cross = visual.TextStim(win, text='+', height=0.1, color='white')
     iti_timer = core.CountdownTimer(iti_duration)
+    print(f"ITI routine started. TRIG_ITI_START ({config.TRIG_ITI_START.hex()}) SET ON (queued).")
+    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_ITI_START)
     while iti_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
@@ -146,10 +146,11 @@ for this_trial in main_loop:
         if 'space' in keys:
             break
         
-    triggering.send_state_change(trigger_port, config.TRIG_RESET)
     iti_end_time = core.monotonicClock.getTime()
     thisExp.addData('iti_end_time', iti_end_time)
     thisExp.addData('iti_actual_duration', round(iti_end_time - iti_start_time, 4))
+    
+    triggering.send_state_change(trigger_port, config.TRIG_RESET)
     print(f"ITI ended. Sent TRIG_RESET for {config.TRIG_ITI_START.hex()}.")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -173,8 +174,8 @@ for this_trial in main_loop:
     thisExp.addData('stim_start_time', stim_start_time)
     print(f"Trial {current_loop_index+1}: Temp={current_temp}°C, Surface={current_surface}. Thermode triggered.")
 
-
     stim_duration = config.RAMP_UP_SECS_CONST + config.STIM_HOLD_DURATION_SECS + config.RAMP_DOWN_SECS_CONST
+    
     stim_timer = core.CountdownTimer(stim_duration)
         while stim_timer.getTime() > 0:
         fixation_cross.draw()
@@ -249,11 +250,6 @@ for this_trial in main_loop:
     # VAS Routine
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Begin Routine
-
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
-    vas_start_time = core.monotonicClock.getTime()
-    thisExp.addData('vas_start_time', vas_start_time)
-    print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
 
     vas_rating_trace, vas_time_trace = [], []
     current_pos = round(np.random.uniform(0, 100), 1)
