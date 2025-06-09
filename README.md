@@ -21,6 +21,16 @@ Provides one row per trial with the following columns:
 - `vas_final_coded_rating` &ndash; final visual analogue scale (VAS) rating
   already coded for pain context
 
+- `iti_start_time` &ndash; onset timestamp of the inter-trial interval
+- `iti_end_time` &ndash; offset timestamp of the inter-trial interval
+- `stim_start_time` &ndash; onset timestamp of the stimulation routine
+- `stim_end_time` &ndash; offset timestamp of the stimulation routine
+- `pain_q_start_time` &ndash; start of the pain question routine
+- `pain_q_end_time` &ndash; end of the pain question routine
+- `vas_start_time` &ndash; start of the VAS rating routine
+- `vas_end_time` &ndash; end of the VAS rating routine
+
+
 ### VASTraces_Long.csv
 Contains every sampled VAS rating for each trial in long format:
 - `participant_id`
