@@ -1,5 +1,3 @@
-# data_management.py
-
 import os
 import pandas as pd
 import numpy as np
@@ -26,6 +24,22 @@ def create_data_collector():
         Sequence of sampled VAS ratings throughout the trial.
     vas_times : list[list[float]]
         Time stamps for each rating sample in seconds from VAS onset.
+    iti_start_time : list[float]
+        Absolute clock time when the inter-trial interval began.
+    iti_end_time : list[float]
+        Absolute clock time when the inter-trial interval ended.
+    stim_start_time : list[float]
+        Time when stimulation onset occurred.
+    stim_end_time : list[float]
+        Time when stimulation ended.
+    pain_q_start_time : list[float]
+        Timestamp for the start of the pain question routine.
+    pain_q_end_time : list[float]
+        Timestamp for the end of the pain question routine.
+    vas_start_time : list[float]
+        Timestamp for the start of the VAS rating routine.
+    vas_end_time : list[float]
+        Timestamp for the end of the VAS rating routine.
     """
     return {
         'trial_number': [],
@@ -34,7 +48,15 @@ def create_data_collector():
         'pain_binary_coded': [],
         'vas_final_coded_rating': [],
         'vas_traces': [],
-        'vas_times': []
+        'vas_times': [],
+        'iti_start_time': [],
+        'iti_end_time': [],
+        'stim_start_time': [],
+        'stim_end_time': [],
+        'pain_q_start_time': [],
+        'pain_q_end_time': [],
+        'vas_start_time': [],
+        'vas_end_time': []
     }
 
 def save_all_data(exp_info, exp_name, data, this_dir):
@@ -79,7 +101,15 @@ def save_all_data(exp_info, exp_name, data, this_dir):
             'stimulus_temp': data['stimulus_temp'],
             'selected_surface': data['selected_surface'],
             'pain_binary_coded': data['pain_binary_coded'],
-            'vas_final_coded_rating': data['vas_final_coded_rating']
+            'vas_final_coded_rating': data['vas_final_coded_rating'],
+            'iti_start_time': data['iti_start_time'],
+            'iti_end_time': data['iti_end_time'],
+            'stim_start_time': data['stim_start_time'],
+            'stim_end_time': data['stim_end_time'],
+            'pain_q_start_time': data['pain_q_start_time'],
+            'pain_q_end_time': data['pain_q_end_time'],
+            'vas_start_time': data['vas_start_time'],
+            'vas_end_time': data['vas_end_time']
         })
         summary_filename = os.path.join(participant_dir, f"{base_filename}_TrialSummary.csv")
         summary_df.to_csv(summary_filename, index=False, float_format='%.2f', na_rep='NA')
