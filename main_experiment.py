@@ -94,6 +94,23 @@ if rcs:
 else:
     thisExp.addData('eeg_recording_status', 'skipped_rcs_not_available')
 
+# --- Welcome Routine ---
+welcome_text = (
+    "Merci de participer \u00e0 cette \u00e9tude.\n\n"
+    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur O (Oui) ou N (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches N (gauche) et M (droite), puis en confirmant avec la barre ESPACE.\n\n"
+    "Veuillez rester immobile, vous concentrer sur vos sensations et r\u00e9pondre honn\u00eatement. L\u2019exp\u00e9rience peut \u00eatre arr\u00eat\u00e9e en tout temps, seulement si n\u00e9cessaire. Avez-vous des questions avant de commencer ?"
+)
+welcome_stim = visual.TextStim(win, text=welcome_text, font='Arial', height=0.04, wrapWidth=1.2, color='white')
+continue_routine = True
+while continue_routine:
+    welcome_stim.draw()
+    win.flip()
+    keys = event.getKeys(keyList=['space', 'escape'])
+    if 'escape' in keys:
+        core.quit()
+    if 'space' in keys:
+        continue_routine = False
+
 
 # --- Main Experiment Loop ---
 main_loop = data.TrialHandler(nReps=num_trials, method='sequential',
@@ -117,7 +134,11 @@ for this_trial in main_loop:
     while iti_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
-        if event.getKeys(keyList=['escape']): core.quit()
+        keys = event.getKeys(keyList=['space', 'escape'])
+        if 'escape' in keys:
+            core.quit()
+        if 'space' in keys:
+            break
         
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
     print(f"ITI ended. Sent TRIG_RESET for {config.TRIG_ITI_START.hex()}.")
@@ -151,7 +172,11 @@ for this_trial in main_loop:
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
-        if event.getKeys(keyList=['escape']): core.quit()
+        keys = event.getKeys(keyList=['space', 'escape'])
+        if 'escape' in keys:
+            core.quit()
+        if 'space' in keys:
+            break
 
     triggering.send_event_pulse(trigger_port, config.TRIG_STIM_OFF, config.TRIG_RESET)
     stim_offset_trigger_time = core.getTime()
@@ -165,7 +190,12 @@ for this_trial in main_loop:
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
     print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
 
-    pain_question_stim = visual.TextStim(win, text="Était-ce douloureux? (o/n)", height=0.07, color='white')
+    pain_question_stim = visual.TextStim(
+        win,
+        text="Avez-vous ressenti de la douleur ?\nO = Oui   N = Non",
+        height=0.07,
+        color='white'
+    )
     painKey = keyboard.Keyboard()
     painKey.clearEvents()
     
@@ -314,6 +344,20 @@ if trigger_port and trigger_port.is_open:
 
 # --- Save All Collected Data from our custom collector ---
 dm.save_all_data(exp_info, exp_name, exp_data_collector, _thisDir)
+
+# --- End of Experiment Screen ---
+end_msg = visual.TextStim(
+    win,
+    text="Merci! L'exp\u00e9rience est termin\u00e9e.",
+    height=0.07,
+    color='white'
+)
+end_timer = core.CountdownTimer(5.0)
+while end_timer.getTime() > 0:
+    end_msg.draw()
+    win.flip()
+    if event.getKeys(keyList=['escape']):
+        core.quit()
 
 # --- Clean Up PsychoPy ---
 win.close()
