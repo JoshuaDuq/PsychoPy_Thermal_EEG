@@ -96,11 +96,12 @@ else:
 
 
 # --- Main Experiment Loop ---
+trial_list = [{'idx': i} for i in range(num_trials)]
 main_loop = data.TrialHandler(
     nReps=1,
     method='sequential',
     originPath=-1,
-    trialList=[{'idx': i} for i in range(num_trials)],
+    trialList=trial_list,
     name='trials_loop'
 )
 thisExp.addLoop(main_loop)
