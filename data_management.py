@@ -1,4 +1,3 @@
-# data_management.py
 
 import os
 import pandas as pd
