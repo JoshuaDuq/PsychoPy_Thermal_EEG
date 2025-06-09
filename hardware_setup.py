@@ -34,7 +34,11 @@ def initialize_trigger_port(port_address, baudrate=2000000):
         return None
 
 def initialize_eeg_rcs(host_ip, workspace_path, participant, exp_name):
-    """Initialize the BrainProducts Remote Control Server connection."""
+    """Initialize the BrainProducts Remote Control Server connection.
+
+    The function opens the recorder, sets the workspace, participant and
+    experiment name, and puts the server in monitor mode.
+    """
     print(f"Initializing EEG Remote Control Server at {host_ip}...")
     try:
         rcs = brainproducts.RemoteControlServer(host=host_ip, timeout=10)
