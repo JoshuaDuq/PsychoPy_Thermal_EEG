@@ -1,6 +1,5 @@
 # config.py
 
-import numpy as np
 
 # --- Hexadecimal Trigger Definitions (Aligned with BrainVision Bit Mapping) ---
 TRIG_RESET = b'\x00'         # ALL BITS LOW

@@ -2,7 +2,6 @@
 
 import os
 import numpy as np
-import pandas as pd
 from psychopy import core, visual, event, gui, data, logging
 from psychopy.hardware import keyboard
 
@@ -177,15 +176,6 @@ for this_trial in main_loop:
     stim_duration = config.RAMP_UP_SECS_CONST + config.STIM_HOLD_DURATION_SECS + config.RAMP_DOWN_SECS_CONST
     
     stim_timer = core.CountdownTimer(stim_duration)
-        while stim_timer.getTime() > 0:
-        fixation_cross.draw()
-        win.flip()
-        keys = event.getKeys(keyList=['space', 'escape'])
-        if 'escape' in keys:
-            core.quit()
-        if 'space' in keys:
-            break
-            
     print(f"TRIG_STIM_ON ({config.TRIG_STIM_ON.hex()}) SET ON (queued).")
 
     stim_onset_time = {'t': None}
@@ -198,13 +188,15 @@ for this_trial in main_loop:
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
-        if event.getKeys(keyList=['escape']): core.quit()
+        if event.getKeys(keyList=['escape']):
+            core.quit()
 
     triggering.send_event_pulse(trigger_port, config.TRIG_STIM_OFF, config.TRIG_RESET)
-    stim_offset_trigger_time = core.getTime()
+    stim_offset_trigger_time = core.monotonicClock.getTime()
     thisExp.addData('stim_offset_trigger_time', stim_offset_trigger_time)
     print(f"TRIG_STIM_OFF ({config.TRIG_STIM_OFF.hex()}) pulsed and all lines reset.")
-    thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_trigger_time, 4))
+    thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_time['t'], 4))
+    thisExp.addData('stim_onset_trigger_time', stim_onset_time['t'])
     stim_end_time = core.monotonicClock.getTime()
     thisExp.addData('stim_end_time', stim_end_time)
     thisExp.addData('stim_routine_actual_duration', round(stim_end_time - stim_start_time, 4))
@@ -215,8 +207,6 @@ for this_trial in main_loop:
 
     pain_q_start_time = core.monotonicClock.getTime()
     thisExp.addData('pain_q_start_time', pain_q_start_time)
-    print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
-
     pain_question_stim = visual.TextStim(win, text="Était-ce douloureux? (o/n)", height=0.07, color='white')
 
     painKey = keyboard.Keyboard()
@@ -278,6 +268,7 @@ for this_trial in main_loop:
     print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
     continue_routine = True
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
+    vas_start_time = core.monotonicClock.getTime()
 
     # Each Frame Loop
     while continue_routine:
