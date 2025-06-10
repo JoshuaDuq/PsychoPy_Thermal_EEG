@@ -8,7 +8,7 @@ The code is modular and configurable, allowing for easy adaptation to different 
 
 ## Features
 
-* **Hardware Integration**: Controls a Medoc Pathway/TCS II thermal stimulator via the provided `pytcsii.py` driver.
+* **Hardware Integration**: Controls a QST TCS II thermal stimulator via the provided `pytcsii.py` driver.
 * **EEG Synchronization**:
     * Sends precise, bit-mapped trigger codes through a serial port for robust event marking in EEG data.
     * Integrates with BrainVision Remote Control Server (RCS) to start and stop EEG recordings automatically from within the script.
