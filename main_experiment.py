@@ -196,6 +196,7 @@ for this_trial in main_loop:
         triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
 
     win.callOnFlip(trigger_and_log_stim_onset)
+
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
