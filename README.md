@@ -1,139 +1,164 @@
-# Thermal Pain EEG Experiment
+# Thermal Pain EEG/fMRI Experiment
 
-This repository contains a complete PsychoPy-based code for conducting a thermal pain experiment with simultaneous EEG recording. The experiment is designed to deliver precisely controlled thermal stimuli, send accurate event markers to an EEG system, and collect behavioral pain ratings from participants.
+This repository contains the PsychoPy Coder implementation for a thermal pain perception experiment. The experiment delivers calibrated thermal stimuli, records subjective pain ratings, and sends precise time-locking triggers to an EEG system.
 
-The code is modular and configurable, allowing for easy adaptation to different experimental parameters.
+## Table of Contents
+- [Overview](#overview)
+- [Experimental Task](#experimental-task)
+- [Trial Flow](#trial-flow)
+- [Features](#features)
+- [System Requirements](#system-requirements)
+  - [Software](#software)
+  - [Hardware](#hardware)
+- [Setup and Installation](#setup-and-installation)
+- [How to Run the Experiment](#how-to-run-the-experiment)
+- [Customization](#customization)
+- [Data Output](#data-output)
+- [Code Structure](#code-structure)
 
-***
+## Overview
+
+The primary goal of this experiment is to investigate the neural correlates of thermal pain perception. On each trial, a participant receives a thermal stimulus of a specific temperature. They are then asked to make a binary judgment on whether the stimulus was painful, followed by a rating of the sensation's intensity on a Visual Analogue Scale (VAS). The experiment is designed with robust hardware integration for precise stimulus delivery and neural data synchronization.
+
+## Experimental Task
+
+Participants are instructed to focus on a fixation cross presented at the center of the screen. They receive a series of thermal stimulations on their forearm. Each stimulation is followed by two questions:
+
+1.  **Pain Judgment:** Participants answer `"Était-ce douloureux? (o/n)"` (Was that painful?) by pressing 'o' for *Oui* (Yes) or 'n' for *Non* (No).
+2.  **Intensity Rating:** Participants rate the intensity of the sensation on a Visual Analogue Scale (VAS).
+    * If the stimulus was rated **painful**, the scale is labeled `"aucune douleur"` (no pain) and `"pire douleur\nimaginable"` (worst pain imaginable).
+    * If the stimulus was rated **not painful**, the scale is labeled `"aucune sensation"` (no sensation) and `"chaleur très intense\nmais non douloureuse"` (very intense but not painful heat).
+
+Participants use the 'n' (left) and 'm' (right) keys to move the VAS slider and press the `space` bar to confirm their rating.
+
+## Trial Flow
+
+The experiment consists of a sequence of trials, each following a precise structure. EEG triggers, defined in `config.py`, are sent at the onset of each key phase.
+
+1.  **Inter-Trial Interval (ITI)**
+    * A fixation cross (`+`) is displayed for a random duration between a specified minimum and maximum. The default range is 15-20 seconds.
+    * **EEG Trigger:** `TRIG_ITI_START` (`0x02`) is sent at the start of the ITI.
+
+2.  **Thermal Stimulation**
+    * A pre-determined temperature is applied via the thermode. The temperature ramps up from a baseline, holds for a fixed duration, and then ramps back down.
+    * The participant continues to view the fixation cross.
+    * **EEG Trigger:** `TRIG_STIM_ON` (`0x04`) is sent at the moment the thermode begins the temperature ramp-up.
+
+3.  **Pain Question**
+    * The question `Était-ce douloureux? (o/n)` is displayed.
+    * The experiment waits for a keyboard response ('o' or 'n').
+    * **EEG Trigger:** `TRIG_PAIN_Q_ON` (`0x08`) is sent at the onset of the question screen.
+
+4.  **Visual Analogue Scale (VAS) Rating**
+    * The VAS is presented with anchors corresponding to the pain judgment.
+    * The participant adjusts the slider and confirms their rating.
+    * **EEG Trigger:** `TRIG_VAS_ON` (`0x20`) is sent at the onset of the VAS screen.
+
+At the end of each phase, a `TRIG_RESET` (`0x00`) trigger is sent to reset the trigger port lines.
 
 ## Features
 
-* **Hardware Integration**: Controls a QST TCS II thermal stimulator via the provided `pytcsii.py` driver.
-* **EEG Synchronization**:
-    * Sends precise, bit-mapped trigger codes through a serial port for robust event marking in EEG data.
-    * Integrates with BrainVision Remote Control Server (RCS) to start and stop EEG recordings automatically from within the script.
-* **Experimental Control**:
-    * Presents a fully scripted trial sequence using PsychoPy, including visual stimuli (fixation cross, instructions, questions) and timing control.
-    * Implements a randomized trial order for temperatures and a semi-randomized order for stimulation surfaces to minimize order effects.
-* **Behavioral Data Collection**:
-    * Records binary (yes/no) responses to a pain question.
-    * Collects continuous intensity ratings using a Visual Analogue Scale (VAS) with context-dependent instructions (rating pain vs. non-painful warmth).
-    * Continuously samples the VAS rating throughout the response period for dynamic analysis.
-* **Comprehensive Data Output**: Saves collected data in multiple, analysis-ready formats, including a trial-by-trial summary CSV, a long-format CSV for VAS traces, and a full data backup.
+* **Modular Codebase:** Logic, hardware control, data management, and configuration are separated into distinct Python modules for clarity and maintainability.
+* **Hardware Integration:**
+    * **TCSII Thermode:** Provides control over a thermode device via the `pytcsii` serial wrapper.
+    * **BrainProducts EEG:** Integrates with BrainProducts Remote Control Server (RCS) to start and stop EEG recordings automatically.
+    * **Serial Port Triggers:** Sends precise 8-bit hexadecimal triggers for event marking.
+* **Advanced Trial Randomization:**
+    * Generates a fully randomized sequence of stimulus temperatures.
+    * Pre-generates a surface order to balance temperatures across multiple thermode surfaces, with constraints to avoid repeating the last used surface if possible.
+* **Comprehensive Data Logging:**
+    * Saves a trial-by-trial summary in a `.csv` format.
+    * Saves continuous VAS traces in a long-format `.csv` file.
+    * Creates a compressed NumPy (`.npz`) backup of all raw data structures.
+* **Centralized Configuration:** All key experimental parameters are centralized in `config.py` for easy modification.
 
-***
+## System Requirements
 
-## Repository Structure
+### Software
+* **PsychoPy**
+* **Python 3.x**
+* **Required Python Libraries:**
+    * `pandas`
+    * `numpy`
+    * `pyserial`
+    * `psychopy`
 
-The project is organized into several modules to separate concerns and improve readability.
+### Hardware
+* **Thermal Stimulator:** A TCSII-compatible thermode.
+* **EEG System:** BrainProducts EEG system with Remote Control Server (RCS) enabled.
+* **Triggering Device:** A device that accepts triggers via a serial port.
+* **Display** and **Keyboard** for stimulus presentation and response.
 
-* `main_experiment.py`: The main entry point for the experiment. It orchestrates hardware initialization, the trial loop, and data saving.
-* `config.py`: A central configuration file. **Modify this file to change experiment parameters** like temperatures, timings, and trigger codes.
-* `hardware_setup.py`: Contains functions for initializing all hardware components (Thermode, EEG RCS, Trigger Port).
-* `experiment_logic.py`: Handles the logic for generating and randomizing the experimental sequences (temperature order, surface order).
-* `triggering.py`: Helper functions for sending triggers to the EEG system. Phase triggers (`TRIG_ITI_START`, `TRIG_STIM_ON`, `TRIG_PAIN_Q_ON`, `TRIG_VAS_ON`) are set high for the full duration of their phase and explicitly reset to `TRIG_RESET` at the end. The helper function `send_event_pulse` remains available for brief one-off events such as `TRIG_EEG_REC_START`.
-* `data_management.py`: Defines the data collection structure and handles the final saving of data to disk in multiple formats.
-* `pytcsii.py`: A low-level Python driver for communicating with and controlling the Medoc TCS II thermal stimulator via serial commands.
+## Setup and Installation
 
-***
+1.  **Clone or download the repository.**
+2.  **Install required Python libraries** (e.g., `pip install pandas numpy pyserial psychopy`).
+3.  **Connect Hardware:**
+    * Connect the thermode and triggering device to the computer and identify their COM ports.
+    * Ensure the PsychoPy computer is on the same network as the BrainProducts RCS.
+4.  **Configure Paths:**
+    * Open `main_experiment.py`.
+    * Locate the `exp_info` dictionary.
+    * **Update the `'eeg_workspace'` path** to match the full path of the `.rwksp` workspace file on your EEG recording computer.
 
-## Requirements
+## How to Run the Experiment
 
-* **Hardware**
-    * A computer capable of running PsychoPy.
-    * Medoc TCS II Thermal Stimulator: Connected via a serial port.
-    * EEG System: With a trigger input port. This code is configured for a BrainVision system.
-    * Triggering Device: A serial port (e.g., a USB-to-Serial adapter) configured to send triggers to the EEG system.
-    * (Optional) BrainVision EEG system with Remote Control Server (RCS) enabled on the recording computer for automated recording control.
+1.  Ensure all hardware is connected and powered on.
+2.  Start the BrainVision Recorder software and enable the Remote Control Server.
+3.  Run the main script from PsychoPy Coder or a terminal: `python main_experiment.py`.
+4.  A dialog box will appear. Fill in the following information:
+    * `participant`: The participant ID (default: `sub0000`).
+    * `com_thermode`: The COM port for the thermode (default: `COM15`).
+    * `com_trigger`: The COM port for the trigger device (default: `COM17`).
+    * `eeg_ip`: The IP address of the EEG recording computer (default: `192.168.1.2`).
+    * `eeg_workspace`: Verify the path to the EEG workspace file is correct.
+5.  Click **OK** to start. The script initializes hardware before beginning the welcome screen.
+6.  To quit the experiment at any time, press the `Escape` key.
 
-* **Software & Libraries**
-    * This script is built using Python and the PsychoPy framework. The following libraries are required:
-        * `psychopy`
-        * `pyserial`
-        * `numpy`
-        * `pandas`
-    * You can install the dependencies using pip:
-        ```bash
-        pip install psychopy numpy pandas pyserial
-        ```
+## Customization
 
-***
+All primary experimental parameters can be modified in the `config.py` file.
 
-## Setup and Usage
-
-* **Clone the Repository**
-    ```bash
-    git clone <repository-url>
-    ```
-* **Configure Hardware**
-    * Connect the thermode and trigger port to your computer and note their COM port identifiers (e.g., `COM4` on Windows, `/dev/ttyUSB0` on Linux). Ensure the EEG system is ready to receive triggers.
-
-* **Edit Configuration**
-    * Open the `config.py` file to adjust the core parameters of your experimental design.
-        * `TRIG_...`: Set the hexadecimal trigger codes for each event.
-        * `POSSIBLE_THERMODE_TEMPS`: Define the list of temperatures to be tested.
-        * `NUM_REPEATS_PER_TEMP`: Set how many times each temperature should be presented.
-        * `BASELINE_TEMP`: Set the thermode's baseline temperature.
-        * `RAMP_UP_SECS_CONST`, `STIM_HOLD_DURATION_SECS`, etc.: Adjust all timing parameters.
-
-* **Run the Experiment**
-    * Navigate to the repository directory in your terminal and execute the main script:
-        ```bash
-        python main_experiment.py
-        ```
-    * A dialog box will appear. Confirm or enter the participant ID, COM ports, and EEG information. Click "OK" to begin.
-
-***
-
-## Experimental Protocol
-
-Once started, the experiment proceeds as follows:
-
-* **Setup**: The script initializes hardware, generates the random trial sequences, and prepares the PsychoPy window.
-* **Welcome**: An instruction screen is displayed. The experiment waits for a `spacebar` press to continue.
-* **Trial Loop**: The script enters the main loop, which repeats 60 times (or as configured). Each trial consists of four parts:
-
-    * **A. Inter-Trial Interval (ITI)**
-        * **Visual**: A white fixation cross `+` is shown.
-        * **Duration**: A random interval between 15 and 20 seconds.
-        * **Trigger**: `TRIG_ITI_START` (`0x02`) is set high when the ITI begins and remains active until the ITI ends, when it is reset to `TRIG_RESET`.
-
-    * **B. Thermal Stimulation**
-        * **Visual**: The fixation cross remains on screen.
-        * **Stimulus**: The thermode ramps up from 35.0°C to the target temperature in 3.0s, holds for 7.5s, and ramps down in 2.0s.
-        * **Trigger**: `TRIG_STIM_ON` (`0x04`) is set high at the ramp-up onset and remains active for the entire stimulation. It is reset to `TRIG_RESET` when the stimulus ends.
-
-    * **C. Pain Question**
-        * **Visual**: The text `"Était-ce douloureux? (o/n)"` is displayed.
-        * **Interaction**: The script waits for the participant to press `o` (yes) or `n` (no).
-        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x08`) stays high for the full question duration and is reset to `TRIG_RESET` once the response is made.
-
-    * **D. Visual Analogue Scale (VAS)**
-        * **Visual**: A rating scale appears. The instructions and anchors change based on the previous pain response (e.g., "rate the PAIN" vs. "rate the WARMTH").
-        * **Interaction**: The participant moves a red marker with the `n` (left) and `m` (right) keys and confirms with `spacebar`. The routine times out after 30s.
-        * **Trigger**: `TRIG_VAS_ON` (`0x20`) stays high while the scale is displayed and resets to `TRIG_RESET` upon completion.
-
-* **Shutdown**: After the final trial, EEG recording is stopped, hardware ports are closed, and a "Thank you" message is displayed for 5 seconds.
-
-***
+| Parameter | Default Value | Description |
+| :--- | :--- | :--- |
+| `TRIG_*` | Hex codes (e.g., `b'\x01'`) | Hexadecimal codes for each EEG trigger event. |
+| `TRIGGER_PULSE_SECS` | `0.002` | Duration in seconds for short trigger pulses, specifically for the EEG recording start trigger. |
+| `POSSIBLE_THERMODE_TEMPS` | `[44.3, 45.3, ..., 49.3]` | A list of all stimulus temperatures in °C to be presented. |
+| `NUM_REPEATS_PER_TEMP`| `10` | The number of times each temperature is presented. |
+| `AVAILABLE_SURFACES` | `[1, 2, 3, 4, 5]` | A list of the thermode surfaces to be used. |
+| `BASELINE_TEMP` | `35.0` | The neutral temperature in °C from which stimuli ramp. |
+| `RAMP_UP_SECS_CONST` | `3.0` | The fixed duration in seconds for the temperature ramp-up. |
+| `RAMP_DOWN_SECS_CONST` | `2.0` | The fixed duration in seconds for the temperature ramp-down. |
+| `STIM_HOLD_DURATION_SECS`| `7.5` | The duration in seconds the target temperature is held constant. |
+| `ITI_DURATION_RANGE` | `(15, 20)` | The minimum and maximum duration in seconds for the ITI. |
+| `VAS_SPEED_UNITS_PER_SEC`| `22.0` | The speed of the VAS slider in scale units per second. |
+| `VAS_MAX_DURATION_SECS`| `30.0` | The maximum time allowed for the VAS rating before timeout. |
+| `VAS_SAMPLING_INTERVAL_SECS`| `0.2` | The time interval in seconds at which the VAS slider position is sampled. |
 
 ## Data Output
 
-Data is saved in a folder named `data/<participant_id>/`. Three files are generated for each session:
+Three data files are saved in a directory named `data/<participant_id>/`.
 
-* **`..._TrialSummary.csv`**:
-    * A summary file with one row per trial.
-    * **Columns include**: `trial_number`, `stimulus_temp`, `selected_surface`, `pain_binary_coded`, `vas_final_coded_rating`, and timestamps for each phase of the trial.
+1.  **Trial Summary (`*_TrialSummary.csv`)**
+    * This file contains one row per trial with key outcome measures and timestamps.
+    * Key columns include `trial_number`, `stimulus_temp`, `selected_surface`, `pain_binary_coded` (1 for painful, 0 for non-painful), `vas_final_coded_rating`, and timestamps for each routine.
+    * The VAS rating is coded with an offset of 100 for painful trials.
 
-* **`..._VASTraces_Long.csv`**:
-    * A detailed, long-format file containing the continuous VAS rating data.
-    * **Columns include**: `participant_id`, `trial_number`, `sample_in_trace`, `vas_time_in_trial_secs`, and `vas_coded_rating`. This is ideal for analyzing rating trajectories.
+2.  **VAS Traces (`*_VASTraces_Long.csv`)**
+    * This file contains continuous VAS rating data in a long format.
+    * Columns include `participant_id`, `trial_number`, `stimulus_temp`, `pain_context_0no_1yes`, `sample_in_trace`, `vas_time_in_trial_secs`, and `vas_coded_rating`.
 
-* **`..._BACKUP.npz`**:
-    * A compressed NumPy archive containing the raw Python data structures from the experiment. This serves as a complete backup for custom post-processing.
+3.  **Raw Data Backup (`*_BACKUP.npz`)**
+    * This is a Numpy compressed archive of the raw data collector dictionary. It serves as a complete backup of all collected data lists, including `vas_traces` and `vas_times`.
 
-***
+## Code Structure
 
-## License
-
-This project is unlicensed. You are free to use, modify, and distribute the code. Please consider citing the repository if it is used in your research.
+| File | Description |
+| :--- | :--- |
+| `main_experiment.py` | The main executable script that controls the experiment flow, initializes hardware, presents stimuli, and manages the trial loop. |
+| `config.py` | Contains all user-configurable parameters, including triggers, timings, and temperatures. |
+| `hardware_setup.py` | Handles the initialization of the thermode, trigger port, and BrainProducts RCS. |
+| `experiment_logic.py` | Contains functions for generating the pseudo-randomized temperature and surface orders for the trials. |
+| `data_management.py` | Defines the data collection structure and handles the saving of all output files (`.csv`, `.npz`). |
+| `triggering.py` | A helper module for sending a short trigger pulse followed by a reset command. |
+| `pytcsii.py` | A class-based wrapper for communicating with the TCSII thermode via serial commands. |
