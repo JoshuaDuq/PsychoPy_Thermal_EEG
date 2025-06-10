@@ -1,32 +1,33 @@
 # experiment_logic.py
 
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_temperature_order(temps, repeats):
     """Creates and shuffles the temperature order for all trials."""
-    order = []
-    for temp in temps:
-        order.extend([temp] * repeats)
+    order = np.tile(temps, repeats)
     np.random.shuffle(order)
-    print(f"Randomized temperature order generated: {order}")
-    return order
+    logger.debug("Randomized temperature order generated: %s", order)
+    return order.tolist()
 
 def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_rate):
-    """Precalculates rise and return rates for each possible temperature."""
-    rates = {}
-    for temp_val in temps:
-        temp_diff = abs(temp_val - baseline)
-        rise = (temp_diff / ramp_up_secs) if ramp_up_secs > 0 else 99.0
-        ret = (temp_diff / ramp_down_secs) if ramp_down_secs > 0 else 99.0
-        
-        if temp_diff > 0:
-            rise = max(rise, min_rate)
-            ret = max(ret, min_rate)
-        elif temp_diff == 0:
-            rise, ret = 10.0, 10.0
-            
-        rates[temp_val] = {'rise': rise, 'return': ret}
-    print(f"Pre-calculated ramp rates: {rates}")
+    """Precalculate rise and return rates for each possible temperature."""
+    temps_arr = np.asarray(temps, dtype=float)
+    diff = np.abs(temps_arr - baseline)
+
+    rise = np.where(ramp_up_secs > 0, diff / ramp_up_secs, 99.0)
+    ret = np.where(ramp_down_secs > 0, diff / ramp_down_secs, 99.0)
+
+    rise = np.where(diff > 0, np.maximum(rise, min_rate), 10.0)
+    ret = np.where(diff > 0, np.maximum(ret, min_rate), 10.0)
+
+    rates = {
+        float(t): {'rise': float(r), 'return': float(d)}
+        for t, r, d in zip(temps_arr, rise, ret)
+    }
+    logger.debug("Pre-calculated ramp rates: %s", rates)
     return rates
 
 def generate_surface_order(temp_order, available_surfaces, max_temp):
@@ -57,5 +58,5 @@ def generate_surface_order(temp_order, available_surfaces, max_temp):
         if current_temp == max_temp:
             last_surface_max_temp = chosen_surface
             
-    print(f"Pre-generated surface order: {surface_order}")
+    logger.debug("Pre-generated surface order: %s", surface_order)
     return surface_order
