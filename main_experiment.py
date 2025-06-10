@@ -24,18 +24,18 @@ logger = logging.getLogger(__name__)
 
 # --- Get Experiment Info from User ---
 exp_info = {
-    'participant': 'test01',
+    'participant': 'sub0000',
     'date': data.getDateStr(),
-    'com_thermode': 'COM4',
-    'com_trigger': 'COM5',
+    'com_thermode': 'COM15',
+    'com_trigger': 'COM17',
     'eeg_ip': '192.168.1.2',
-    'eeg_workspace': 'C:/BVA/workspaces/default.rwksp' # IMPORTANT: Change this path
+    'eeg_workspace': 'C:\Users\labmp-eeg\Desktop\joshua_eeg_fmri' # IMPORTANT: Change this path
 }
 dlg = gui.DlgFromDict(dictionary=exp_info, title='Thermal Pain Experiment')
 if not dlg.OK:
     core.quit()
 
-exp_name = "ThermalPainEEG"
+exp_name = "ThermalPainEEGFMRI"
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 
@@ -196,7 +196,6 @@ for this_trial in main_loop:
         triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
 
     win.callOnFlip(trigger_and_log_stim_onset)
-
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
@@ -233,7 +232,6 @@ for this_trial in main_loop:
         config.TRIG_PAIN_Q_ON.hex(),
     )
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
-    
     continue_routine = True
     while continue_routine:
         pain_question_stim.draw()
