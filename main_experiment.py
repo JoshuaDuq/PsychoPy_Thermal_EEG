@@ -176,11 +176,8 @@ for this_trial in main_loop:
         dur_ms=dur_ms,
         surfaces=[current_surface]
     )
-    thermode.trigger()
-    stim_start_time = core.monotonicClock.getTime()
-    thisExp.addData('stim_start_time', stim_start_time)
     logger.debug(
-        "Trial %s: Temp=%s°C, Surface=%s. Thermode triggered.",
+        "Trial %s: Temp=%s°C, Surface=%s. Thermode parameters set.",
         current_loop_index + 1,
         current_temp,
         current_surface,
@@ -193,11 +190,13 @@ for this_trial in main_loop:
 
     stim_onset_time = {'t': None}
 
-    def log_stim_onset():
+    def trigger_and_log_stim_onset():
+        thermode.trigger()
         stim_onset_time['t'] = core.monotonicClock.getTime()
         triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
 
-    win.callOnFlip(log_stim_onset)
+    win.callOnFlip(trigger_and_log_stim_onset)
+
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
@@ -214,6 +213,8 @@ for this_trial in main_loop:
     thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_time['t'], 4))
     thisExp.addData('stim_onset_trigger_time', stim_onset_time['t'])
     stim_end_time = core.monotonicClock.getTime()
+    stim_start_time = stim_onset_time['t']
+    thisExp.addData('stim_start_time', stim_start_time)
     thisExp.addData('stim_end_time', stim_end_time)
     thisExp.addData('stim_routine_actual_duration', round(stim_end_time - stim_start_time, 4))
 
