@@ -7,7 +7,7 @@ TRIG_EEG_REC_START = b'\x01' # Bit 0 HIGH (EEG Rec Start event)
 TRIG_ITI_START = b'\x02'     # Bit 1 HIGH (ITI phase active)
 TRIG_STIM_ON = b'\x04'       # Bit 2 HIGH (Stimulus phase active)
 TRIG_PAIN_Q_ON = b'\x08'     # Bit 3 HIGH (Pain Question phase active)
-TRIG_VAS_ON = b'\x20'        # Bit 5 HIGH (VAS phase active)
+TRIG_VAS_ON = b'\x20'        # Bit 4 HIGH (VAS phase active)
 
 # --- Trigger Timing ---
 TRIGGER_PULSE_SECS = 0.002  # Duration of each trigger pulse (ONLY FOR EEG_REC_START)
