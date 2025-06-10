@@ -106,7 +106,7 @@ Once started, the experiment proceeds as follows:
     * **C. Pain Question**
         * **Visual**: The text `"Était-ce douloureux? (o/n)"` is displayed.
         * **Interaction**: The script waits for the participant to press `o` (yes) or `n` (no).
-        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x10`) stays high for the full question duration and is reset to `TRIG_RESET` once the response is made.
+        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x08`) stays high for the full question duration and is reset to `TRIG_RESET` once the response is made.
 
     * **D. Visual Analogue Scale (VAS)**
         * **Visual**: A rating scale appears. The instructions and anchors change based on the previous pain response (e.g., "rate the PAIN" vs. "rate the WARMTH").
