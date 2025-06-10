@@ -317,32 +317,21 @@ for this_trial in main_loop:
 
     frame_dur = win.monitorFramePeriod if getattr(win, 'monitorFramePeriod', None) else 1 / 60.0
 
-    m_held, n_held = False, False
-
     # Each Frame Loop
     while continue_routine:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
-        # Handle movement keys
-        keys = kb.getKeys(['m', 'n'], waitRelease=False)
-        if keys:
-            interaction_occurred = True
-            for key in keys:
-                if key.name == 'm':
-                    if key.duration is None:
-                        m_held = True
-                    else:
-                        m_held = False
-                if key.name == 'n':
-                    if key.duration is None:
-                        n_held = True
-                    else:
-                        n_held = False
-
-        if m_held:
-            current_pos = min(100.0, current_pos + increment)
-        if n_held:
-            current_pos = max(0.0, current_pos - increment)
+        # Handle movement keys using the approach from Builder to detect
+        # whether the most recent key event is still being held.
+        keys = kb.getKeys(['m', 'n'], waitRelease=False, clear=False)
+        if keys and keys[-1].duration is None:
+            key = keys[-1].name
+            if key == 'm':
+                current_pos = min(100.0, current_pos + increment)
+                interaction_occurred = True
+            elif key == 'n':
+                current_pos = max(0.0, current_pos - increment)
+                interaction_occurred = True
         
         # Update marker position
         marker_x = -0.5 + (current_pos / 100.0)
