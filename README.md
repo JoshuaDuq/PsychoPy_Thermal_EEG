@@ -6,6 +6,9 @@ This repository contains the PsychoPy Coder implementation for a thermal pain pe
 - [Overview](#overview)
 - [Experimental Task](#experimental-task)
 - [Trial Flow](#trial-flow)
+- [Trial Sequence Generation](#trial-sequence-generation)
+  - [Temperature Selection Logic](#temperature-selection-logic)
+  - [Surface Selection Logic](#surface-selection-logic)
 - [Features](#features)
 - [System Requirements](#system-requirements)
   - [Software](#software)
@@ -56,6 +59,31 @@ The experiment consists of a sequence of trials, each following a precise struct
 
 At the end of each phase, a `TRIG_RESET` (`0x00`) trigger is sent to reset the trigger port lines.
 
+## Trial Sequence Generation
+
+The order of temperatures and the assignment to thermode surfaces are pre-generated before the first trial begins, according to the logic in `experiment_logic.py`.
+
+### Temperature Selection Logic
+The function `generate_temperature_order` creates the full, trial-by-trial sequence of temperatures to be presented.
+1.  It takes the list of possible temperatures (`POSSIBLE_THERMODE_TEMPS`) and the number of repetitions (`NUM_REPEATS_PER_TEMP`) from `config.py`.
+2.  It creates a master list of all stimuli for the entire experiment by tiling the list of possible temperatures by the number of repeats (e.g., `[45, 47]` repeated 2 times becomes `[45, 47, 45, 47]`).
+3.  This complete list of stimuli is then shuffled into a random order to create the final sequence for the experiment.
+
+### Surface Selection Logic
+The function `generate_surface_order` assigns a specific thermode surface to each trial in the pre-generated temperature sequence. Its goal is to ensure temperatures are balanced across surfaces while avoiding immediate repetitions of the same surface.
+
+1.  **Calculate Target Distribution:**
+    * The function first calculates how many times each temperature should ideally be assigned to each available surface to ensure a balanced distribution.
+    * For a given temperature, it determines a base number of assignments for each surface using integer division.
+    * Any remaining (extra) assignments are distributed randomly across the surfaces.
+
+2.  **Sequential Assignment with Constraints:** The function then iterates through the shuffled temperature list, assigning a surface to each trial one by one. For each trial, it performs the following steps:
+    * It identifies a pool of "candidate surfaces" which are eligible to be assigned the current trial's temperature based on the pre-calculated distribution.
+    * **General Repetition Constraint:** If possible (i.e., if there is more than one candidate surface), it removes the surface used in the immediately preceding trial from the candidate pool. This minimizes back-to-back stimulation on the same physical location.
+    * **Maximum Temperature Constraint:** A stricter constraint is applied if the current trial's temperature is the maximum possible temperature. If possible, it avoids using the same surface that was used for the *previous* maximum temperature trial.
+    * **Final Selection:** A surface is randomly chosen from the final (constrained) pool of candidates.
+    * This chosen surface is added to the `surface_order` list, and the logic proceeds to the next trial.
+
 ## Features
 
 * **Modular Codebase:** Logic, hardware control, data management, and configuration are separated into distinct Python modules for clarity and maintainability.
@@ -65,7 +93,7 @@ At the end of each phase, a `TRIG_RESET` (`0x00`) trigger is sent to reset the t
     * **Serial Port Triggers:** Sends precise 8-bit hexadecimal triggers for event marking.
 * **Advanced Trial Randomization:**
     * Generates a fully randomized sequence of stimulus temperatures.
-    * Pre-generates a surface order to balance temperatures across multiple thermode surfaces, with constraints to avoid repeating the last used surface if possible.
+    * Implements a balanced and constrained distribution of temperatures across multiple thermode surfaces.
 * **Comprehensive Data Logging:**
     * Saves a trial-by-trial summary in a `.csv` format.
     * Saves continuous VAS traces in a long-format `.csv` file.
