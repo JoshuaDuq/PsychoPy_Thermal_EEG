@@ -2,7 +2,8 @@
 
 import os
 import numpy as np
-from psychopy import core, visual, event, gui, data, logging
+import logging
+from psychopy import core, visual, event, gui, data, logging as psy_logging
 from psychopy.hardware import keyboard
 
 # --- Import Modularized Code ---
@@ -13,6 +14,9 @@ import hardware_setup as hw
 import triggering
 import experiment_logic as logic
 import data_management as dm
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # =================================================================
 # 1. SETUP & INITIALIZATION
@@ -47,7 +51,7 @@ rcs = hw.initialize_eeg_rcs(
 
 # Graceful exit if critical hardware fails
 if thermode is None or trigger_port is None:
-    print("Critical hardware failed to initialize. Exiting.")
+    logger.error("Critical hardware failed to initialize. Exiting.")
     core.quit()
 
 # --- Prepare Experiment Sequences & Values ---
@@ -65,6 +69,8 @@ win = visual.Window(size=(1920, 1080), fullscr=True, screen=0, winType='pyglet',
 win.mouseVisible = False
 kb = keyboard.Keyboard()
 event.clearEvents()
+fixation_cross = visual.TextStim(win, text='+', height=0.1, color='white')
+pain_question_stim = visual.TextStim(win, text="Était-ce douloureux? (o/n)", height=0.07, color='white')
 
 # --- Prepare Data Collection ---
 exp_data_collector = dm.create_data_collector()
@@ -82,13 +88,13 @@ thisExp = data.ExperimentHandler(name=exp_name, version='',
 # --- Start EEG Recording ---
 if rcs:
     try:
-        print("Commanding EEG to start recording...")
+        logger.info("Commanding EEG to start recording...")
         rcs.startRecording()
         thisExp.addData('eeg_rec_command_sent_time', core.monotonicClock.getTime())
         triggering.send_event_pulse(trigger_port, config.TRIG_EEG_REC_START, config.TRIG_RESET)
-        print(f"Sent {config.TRIG_EEG_REC_START.hex()} pulse for EEG Start.")
+        logger.debug("Sent %s pulse for EEG Start.", config.TRIG_EEG_REC_START.hex())
     except Exception as e:
-        print(f"EEG start recording error: {e}")
+        logger.error("EEG start recording error: %s", e)
         thisExp.addData('eeg_recording_status', f'failed_rcs_error: {e}')
 else:
     thisExp.addData('eeg_recording_status', 'skipped_rcs_not_available')
@@ -132,9 +138,8 @@ for this_trial in main_loop:
     iti_start_time = core.monotonicClock.getTime()
     thisExp.addData('iti_start_time', iti_start_time)
 
-    fixation_cross = visual.TextStim(win, text='+', height=0.1, color='white')
     iti_timer = core.CountdownTimer(iti_duration)
-    print(f"ITI routine started. TRIG_ITI_START ({config.TRIG_ITI_START.hex()}) SET ON (queued).")
+    logger.debug("ITI routine started. TRIG_ITI_START (%s) SET ON (queued).", config.TRIG_ITI_START.hex())
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_ITI_START)
     while iti_timer.getTime() > 0:
         fixation_cross.draw()
@@ -150,7 +155,10 @@ for this_trial in main_loop:
     thisExp.addData('iti_actual_duration', round(iti_end_time - iti_start_time, 4))
     
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
-    print(f"ITI ended. Sent TRIG_RESET for {config.TRIG_ITI_START.hex()}.")
+    logger.debug(
+        "ITI ended. Sent TRIG_RESET for %s.",
+        config.TRIG_ITI_START.hex()
+    )
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Stimulus Routine
@@ -168,23 +176,26 @@ for this_trial in main_loop:
         dur_ms=dur_ms,
         surfaces=[current_surface]
     )
-    thermode.trigger()
-    stim_start_time = core.monotonicClock.getTime()
-    thisExp.addData('stim_start_time', stim_start_time)
-    print(f"Trial {current_loop_index+1}: Temp={current_temp}°C, Surface={current_surface}. Thermode triggered.")
+    logger.debug(
+        "Trial %s: Temp=%s°C, Surface=%s. Thermode parameters set.",
+        current_loop_index + 1,
+        current_temp,
+        current_surface,
+    )
 
     stim_duration = config.RAMP_UP_SECS_CONST + config.STIM_HOLD_DURATION_SECS + config.RAMP_DOWN_SECS_CONST
     
     stim_timer = core.CountdownTimer(stim_duration)
-    print(f"TRIG_STIM_ON ({config.TRIG_STIM_ON.hex()}) SET ON (queued).")
+    logger.debug("TRIG_STIM_ON (%s) SET ON (queued).", config.TRIG_STIM_ON.hex())
 
     stim_onset_time = {'t': None}
 
-    def log_stim_onset():
+    def trigger_and_log_stim_onset():
+        thermode.trigger()
         stim_onset_time['t'] = core.monotonicClock.getTime()
         triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
 
-    win.callOnFlip(log_stim_onset)
+    win.callOnFlip(trigger_and_log_stim_onset)
     while stim_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
@@ -194,10 +205,15 @@ for this_trial in main_loop:
     triggering.send_event_pulse(trigger_port, config.TRIG_STIM_OFF, config.TRIG_RESET)
     stim_offset_trigger_time = core.monotonicClock.getTime()
     thisExp.addData('stim_offset_trigger_time', stim_offset_trigger_time)
-    print(f"TRIG_STIM_OFF ({config.TRIG_STIM_OFF.hex()}) pulsed and all lines reset.")
+    logger.debug(
+        "TRIG_STIM_OFF (%s) pulsed and all lines reset.",
+        config.TRIG_STIM_OFF.hex(),
+    )
     thisExp.addData('stim_actual_duration_from_triggers', round(stim_offset_trigger_time - stim_onset_time['t'], 4))
     thisExp.addData('stim_onset_trigger_time', stim_onset_time['t'])
     stim_end_time = core.monotonicClock.getTime()
+    stim_start_time = stim_onset_time['t']
+    thisExp.addData('stim_start_time', stim_start_time)
     thisExp.addData('stim_end_time', stim_end_time)
     thisExp.addData('stim_routine_actual_duration', round(stim_end_time - stim_start_time, 4))
 
@@ -207,12 +223,14 @@ for this_trial in main_loop:
 
     pain_q_start_time = core.monotonicClock.getTime()
     thisExp.addData('pain_q_start_time', pain_q_start_time)
-    pain_question_stim = visual.TextStim(win, text="Était-ce douloureux? (o/n)", height=0.07, color='white')
 
     painKey = keyboard.Keyboard()
     painKey.clearEvents()
     
-    print(f"TRIG_PAIN_Q_ON ({config.TRIG_PAIN_Q_ON.hex()}) SET ON (queued).")
+    logger.debug(
+        "TRIG_PAIN_Q_ON (%s) SET ON (queued).",
+        config.TRIG_PAIN_Q_ON.hex(),
+    )
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
     
     continue_routine = True
@@ -234,7 +252,10 @@ for this_trial in main_loop:
     pain_q_end_time = core.monotonicClock.getTime()
     thisExp.addData('pain_q_end_time', pain_q_end_time)
     thisExp.addData('pain_q_actual_duration', round(pain_q_end_time - pain_q_start_time, 4))
-    print(f"Pain question ended. Sent TRIG_RESET for {config.TRIG_PAIN_Q_ON.hex()}.")
+    logger.debug(
+        "Pain question ended. Sent TRIG_RESET for %s.",
+        config.TRIG_PAIN_Q_ON.hex(),
+    )
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # VAS Routine
@@ -265,14 +286,15 @@ for this_trial in main_loop:
     kb.clearEvents()
     event.clearEvents(eventType='keyboard')
 
-    print(f"TRIG_VAS_ON ({config.TRIG_VAS_ON.hex()}) SET ON (queued).")
+    logger.debug("TRIG_VAS_ON (%s) SET ON (queued).", config.TRIG_VAS_ON.hex())
     continue_routine = True
     win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
     vas_start_time = core.monotonicClock.getTime()
 
+    frame_dur = win.monitorFramePeriod if getattr(win, 'monitorFramePeriod', None) else 1 / 60.0
+
     # Each Frame Loop
     while continue_routine:
-        frame_dur = win.monitorFramePeriod if hasattr(win, 'monitorFramePeriod') and win.monitorFramePeriod else 1/60.0
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
         
         # Handle movement keys
@@ -333,7 +355,10 @@ for this_trial in main_loop:
     vas_end_time = core.monotonicClock.getTime()
     thisExp.addData('vas_end_time', vas_end_time)
     thisExp.addData('vas_actual_duration', round(vas_end_time - vas_start_time, 4))
-    print(f"VAS ended. Sent TRIG_RESET for {config.TRIG_VAS_ON.hex()}.")
+    logger.debug(
+        "VAS ended. Sent TRIG_RESET for %s.",
+        config.TRIG_VAS_ON.hex(),
+    )
 
     # --- Append data to collector for final saving ---
     exp_data_collector['trial_number'].append(current_loop_index + 1)
@@ -365,14 +390,14 @@ if rcs:
         rcs.stopRecording()
         core.wait(1.0)
         rcs.close()
-        print("EEG recording stopped and RCS connection closed.")
+        logger.info("EEG recording stopped and RCS connection closed.")
     except Exception as e:
-        print(f"EEG stop/close error: {e}")
+        logger.error("EEG stop/close error: %s", e)
 
 if trigger_port and trigger_port.is_open:
     triggering.send_state_change(trigger_port, config.TRIG_RESET)
     trigger_port.close()
-    print("Trigger port closed.")
+    logger.info("Trigger port closed.")
 
 # --- Save All Collected Data from our custom collector ---
 dm.save_all_data(exp_info, exp_name, exp_data_collector, _thisDir)
