@@ -1,47 +1,139 @@
-# PsychoPy EEG Modularized
+# Thermal Pain EEG Experiment
 
-This repository contains a modular PsychoPy experiment for delivering thermal
-pain stimulation while recording EEG data. The code is organized so that
-hardware setup, triggering, trial logic and data management live in separate
-modules.
+This repository contains the complete PsychoPy-based code for conducting a thermal pain experiment with simultaneous EEG recording. The experiment is designed to deliver precisely controlled thermal stimuli, send accurate event markers to an EEG system, and collect behavioral pain ratings from participants.
 
-## Data output
+The code is modular and configurable, allowing for easy adaptation to different experimental parameters.
 
-All result files are written inside the `data/<participant_id>` directory when
-the experiment finishes. The filenames include the participant identifier,
-experiment name and date (e.g. `01_ThermalPainEEG_20240101_TrialSummary.csv`).
+***
 
-### TrialSummary.csv
-Provides one row per trial with the following columns:
-- `trial_number` &ndash; sequential index starting at 1
-- `stimulus_temp` &ndash; stimulus temperature in °C
-- `selected_surface` &ndash; thermode surface used
-- `pain_binary_coded` &ndash; pain question response (1 for "yes" and 0 for
-  "no")
-- `vas_final_coded_rating` &ndash; final visual analogue scale (VAS) rating
-  already coded for pain context
+## Features
 
-- `iti_start_time` &ndash; onset timestamp of the inter-trial interval
-- `iti_end_time` &ndash; offset timestamp of the inter-trial interval
-- `stim_start_time` &ndash; onset timestamp of the stimulation routine
-- `stim_end_time` &ndash; offset timestamp of the stimulation routine
-- `pain_q_start_time` &ndash; start of the pain question routine
-- `pain_q_end_time` &ndash; end of the pain question routine
-- `vas_start_time` &ndash; start of the VAS rating routine
-- `vas_end_time` &ndash; end of the VAS rating routine
+* **Hardware Integration**: Controls a Medoc Pathway/TCS II thermal stimulator via the provided `pytcsii.py` driver.
+* **EEG Synchronization**:
+    * Sends precise, bit-mapped trigger codes through a serial port for robust event marking in EEG data.
+    * Integrates with BrainVision Remote Control Server (RCS) to start and stop EEG recordings automatically from within the script.
+* **Experimental Control**:
+    * Presents a fully scripted trial sequence using PsychoPy, including visual stimuli (fixation cross, instructions, questions) and timing control.
+    * Implements a randomized trial order for temperatures and a semi-randomized order for stimulation surfaces to minimize order effects.
+* **Behavioral Data Collection**:
+    * Records binary (yes/no) responses to a pain question.
+    * Collects continuous intensity ratings using a Visual Analogue Scale (VAS) with context-dependent instructions (rating pain vs. non-painful warmth).
+    * Continuously samples the VAS rating throughout the response period for dynamic analysis.
+* **Comprehensive Data Output**: Saves collected data in multiple, analysis-ready formats, including a trial-by-trial summary CSV, a long-format CSV for VAS traces, and a full data backup.
 
+***
 
-### VASTraces_Long.csv
-Contains every sampled VAS rating for each trial in long format:
-- `participant_id`
-- `trial_number`
-- `stimulus_temp`
-- `pain_context_0no_1yes`
-- `sample_in_trace` &ndash; sample index within the trial
-- `vas_time_in_trial_secs` &ndash; timestamp of the sample (s)
-- `vas_coded_rating` &ndash; coded rating value
+## Repository Structure
 
-### BACKUP.npz
-A compressed NumPy archive storing the raw lists from the data collector. This
-serves as a full backup should any custom analysis be required.
+The project is organized into several modules to separate concerns and improve readability.
 
+* `main_experiment.py`: The main entry point for the experiment. It orchestrates hardware initialization, the trial loop, and data saving.
+* `config.py`: A central configuration file. **Modify this file to change experiment parameters** like temperatures, timings, and trigger codes.
+* `hardware_setup.py`: Contains functions for initializing all hardware components (Thermode, EEG RCS, Trigger Port).
+* `experiment_logic.py`: Handles the logic for generating and randomizing the experimental sequences (temperature order, surface order).
+* `triggering.py`: Helper functions for sending state-based and event-based triggers to the EEG system.
+* `data_management.py`: Defines the data collection structure and handles the final saving of data to disk in multiple formats.
+* `pytcsii.py`: A low-level Python driver for communicating with and controlling the Medoc TCS II thermal stimulator via serial commands.
+
+***
+
+## Requirements
+
+* **Hardware**
+    * A computer capable of running PsychoPy.
+    * Medoc TCS II Thermal Stimulator: Connected via a serial port.
+    * EEG System: With a trigger input port. This code is configured for a BrainVision system.
+    * Triggering Device: A serial port (e.g., a USB-to-Serial adapter) configured to send triggers to the EEG system.
+    * (Optional) BrainVision EEG system with Remote Control Server (RCS) enabled on the recording computer for automated recording control.
+
+* **Software & Libraries**
+    * This script is built using Python and the PsychoPy framework. The following libraries are required:
+        * `psychopy`
+        * `pyserial`
+        * `numpy`
+        * `pandas`
+    * You can install the dependencies using pip:
+        ```bash
+        pip install psychopy numpy pandas pyserial
+        ```
+
+***
+
+## Setup and Usage
+
+* **Clone the Repository**
+    ```bash
+    git clone <repository-url>
+    ```
+* **Configure Hardware**
+    * Connect the thermode and trigger port to your computer and note their COM port identifiers (e.g., `COM4` on Windows, `/dev/ttyUSB0` on Linux). Ensure the EEG system is ready to receive triggers.
+
+* **Edit Configuration**
+    * Open the `config.py` file to adjust the core parameters of your experimental design.
+        * `TRIG_...`: Set the hexadecimal trigger codes for each event.
+        * `POSSIBLE_THERMODE_TEMPS`: Define the list of temperatures to be tested.
+        * `NUM_REPEATS_PER_TEMP`: Set how many times each temperature should be presented.
+        * `BASELINE_TEMP`: Set the thermode's baseline temperature.
+        * `RAMP_UP_SECS_CONST`, `STIM_HOLD_DURATION_SECS`, etc.: Adjust all timing parameters.
+
+* **Run the Experiment**
+    * Navigate to the repository directory in your terminal and execute the main script:
+        ```bash
+        python main_experiment.py
+        ```
+    * A dialog box will appear. Confirm or enter the participant ID, COM ports, and EEG information. Click "OK" to begin.
+
+***
+
+## Experimental Protocol
+
+Once started, the experiment proceeds as follows:
+
+* **Setup**: The script initializes hardware, generates the random trial sequences, and prepares the PsychoPy window.
+* **Welcome**: An instruction screen is displayed. The experiment waits for a `spacebar` press to continue.
+* **Trial Loop**: The script enters the main loop, which repeats 60 times (or as configured). Each trial consists of four parts:
+
+    * **A. Inter-Trial Interval (ITI)**
+        * **Visual**: A white fixation cross `+` is shown.
+        * **Duration**: A random interval between 15 and 20 seconds.
+        * **Trigger**: `TRIG_ITI_START` (`0x02`) is sent at the onset and held high for the duration.
+
+    * **B. Thermal Stimulation**
+        * **Visual**: The fixation cross remains on screen.
+        * **Stimulus**: The thermode ramps up from 35.0°C to the target temperature in 3.0s, holds for 7.5s, and ramps down in 2.0s.
+        * **Trigger**: `TRIG_STIM_ON` (`0x04`) is sent at the onset of the ramp-up. A `TRIG_STIM_OFF` (`0x08`) pulse is sent upon completion.
+
+    * **C. Pain Question**
+        * **Visual**: The text `"Était-ce douloureux? (o/n)"` is displayed.
+        * **Interaction**: The script waits for the participant to press `o` (yes) or `n` (no).
+        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x10`) is sent at the onset and held until a response is made.
+
+    * **D. Visual Analogue Scale (VAS)**
+        * **Visual**: A rating scale appears. The instructions and anchors change based on the previous pain response (e.g., "rate the PAIN" vs. "rate the WARMTH").
+        * **Interaction**: The participant moves a red marker with the `n` (left) and `m` (right) keys and confirms with `spacebar`. The routine times out after 30s.
+        * **Trigger**: `TRIG_VAS_ON` (`0x20`) is sent at the onset and held until the routine ends.
+
+* **Shutdown**: After the final trial, EEG recording is stopped, hardware ports are closed, and a "Thank you" message is displayed for 5 seconds.
+
+***
+
+## Data Output
+
+Data is saved in a folder named `data/<participant_id>/`. Three files are generated for each session:
+
+* **`..._TrialSummary.csv`**:
+    * A summary file with one row per trial.
+    * **Columns include**: `trial_number`, `stimulus_temp`, `selected_surface`, `pain_binary_coded`, `vas_final_coded_rating`, and timestamps for each phase of the trial.
+
+* **`..._VASTraces_Long.csv`**:
+    * A detailed, long-format file containing the continuous VAS rating data.
+    * **Columns include**: `participant_id`, `trial_number`, `sample_in_trace`, `vas_time_in_trial_secs`, and `vas_coded_rating`. This is ideal for analyzing rating trajectories.
+
+* **`..._BACKUP.npz`**:
+    * A compressed NumPy archive containing the raw Python data structures from the experiment. This serves as a complete backup for custom post-processing.
+
+***
+
+## License
+
+This project is unlicensed. You are free to use, modify, and distribute the code. Please consider citing the repository if it is used in your research.
