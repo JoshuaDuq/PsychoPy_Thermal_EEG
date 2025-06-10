@@ -139,8 +139,8 @@ for this_trial in main_loop:
     thisExp.addData('iti_start_time', iti_start_time)
 
     iti_timer = core.CountdownTimer(iti_duration)
-    logger.debug("ITI routine started. TRIG_ITI_START (%s) SET ON (queued).", config.TRIG_ITI_START.hex())
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_ITI_START)
+    logger.debug("ITI routine started. TRIG_ITI_START (%s) pulse queued.", config.TRIG_ITI_START.hex())
+    win.callOnFlip(triggering.send_event_pulse, trigger_port, config.TRIG_ITI_START, config.TRIG_RESET)
     while iti_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
@@ -154,11 +154,7 @@ for this_trial in main_loop:
     thisExp.addData('iti_end_time', iti_end_time)
     thisExp.addData('iti_actual_duration', round(iti_end_time - iti_start_time, 4))
     
-    triggering.send_state_change(trigger_port, config.TRIG_RESET)
-    logger.debug(
-        "ITI ended. Sent TRIG_RESET for %s.",
-        config.TRIG_ITI_START.hex()
-    )
+    logger.debug("ITI ended. TRIG_ITI_START pulse automatically reset.")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Stimulus Routine
@@ -186,14 +182,14 @@ for this_trial in main_loop:
     stim_duration = config.RAMP_UP_SECS_CONST + config.STIM_HOLD_DURATION_SECS + config.RAMP_DOWN_SECS_CONST
     
     stim_timer = core.CountdownTimer(stim_duration)
-    logger.debug("TRIG_STIM_ON (%s) SET ON (queued).", config.TRIG_STIM_ON.hex())
+    logger.debug("TRIG_STIM_ON (%s) pulse queued.", config.TRIG_STIM_ON.hex())
 
     stim_onset_time = {'t': None}
 
     def trigger_and_log_stim_onset():
         thermode.trigger()
         stim_onset_time['t'] = core.monotonicClock.getTime()
-        triggering.send_state_change(trigger_port, config.TRIG_STIM_ON)
+        triggering.send_event_pulse(trigger_port, config.TRIG_STIM_ON, config.TRIG_RESET)
 
     win.callOnFlip(trigger_and_log_stim_onset)
     while stim_timer.getTime() > 0:
@@ -228,10 +224,10 @@ for this_trial in main_loop:
     painKey.clearEvents()
     
     logger.debug(
-        "TRIG_PAIN_Q_ON (%s) SET ON (queued).",
+        "TRIG_PAIN_Q_ON (%s) pulse queued.",
         config.TRIG_PAIN_Q_ON.hex(),
     )
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_PAIN_Q_ON)
+    win.callOnFlip(triggering.send_event_pulse, trigger_port, config.TRIG_PAIN_Q_ON, config.TRIG_RESET)
     continue_routine = True
     while continue_routine:
         pain_question_stim.draw()
@@ -247,14 +243,11 @@ for this_trial in main_loop:
     elif painKey.keys == 'n': pain_response = 0
     thisExp.addData('pain_question_response_coded', pain_response)
     
-    triggering.send_state_change(trigger_port, config.TRIG_RESET)
     pain_q_end_time = core.monotonicClock.getTime()
     thisExp.addData('pain_q_end_time', pain_q_end_time)
     thisExp.addData('pain_q_actual_duration', round(pain_q_end_time - pain_q_start_time, 4))
     logger.debug(
-        "Pain question ended. Sent TRIG_RESET for %s.",
-        config.TRIG_PAIN_Q_ON.hex(),
-    )
+        "Pain question ended. TRIG_PAIN_Q_ON pulse automatically reset.")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # VAS Routine
@@ -285,9 +278,9 @@ for this_trial in main_loop:
     kb.clearEvents()
     event.clearEvents(eventType='keyboard')
 
-    logger.debug("TRIG_VAS_ON (%s) SET ON (queued).", config.TRIG_VAS_ON.hex())
+    logger.debug("TRIG_VAS_ON (%s) pulse queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
-    win.callOnFlip(triggering.send_state_change, trigger_port, config.TRIG_VAS_ON)
+    win.callOnFlip(triggering.send_event_pulse, trigger_port, config.TRIG_VAS_ON, config.TRIG_RESET)
     vas_start_time = core.monotonicClock.getTime()
 
     frame_dur = win.monitorFramePeriod if getattr(win, 'monitorFramePeriod', None) else 1 / 60.0
@@ -350,14 +343,11 @@ for this_trial in main_loop:
     thisExp.addData('vas_interaction_occurred', int(interaction_occurred))
     thisExp.addData('vas_initial_position', round(initial_pos, 2))
 
-    triggering.send_state_change(trigger_port, config.TRIG_RESET)
     vas_end_time = core.monotonicClock.getTime()
     thisExp.addData('vas_end_time', vas_end_time)
     thisExp.addData('vas_actual_duration', round(vas_end_time - vas_start_time, 4))
     logger.debug(
-        "VAS ended. Sent TRIG_RESET for %s.",
-        config.TRIG_VAS_ON.hex(),
-    )
+        "VAS ended. TRIG_VAS_ON pulse automatically reset.")
 
     # --- Append data to collector for final saving ---
     exp_data_collector['trial_number'].append(current_loop_index + 1)
