@@ -37,3 +37,17 @@ def test_generate_surface_order_no_consecutive_repeat():
     assert len(order) == len(temp_order)
     assert all(order[i] != order[i - 1] for i in range(1, len(order)))
 
+
+def test_generate_surface_order_balanced_distribution():
+    np.random.seed(2)
+    temp_order = [40] * 4 + [45] * 4
+    surfaces = [1, 2]
+    order = generate_surface_order(temp_order, surfaces, max_temp=45)
+
+    counts = {(t, s): 0 for t in set(temp_order) for s in surfaces}
+    for t, s in zip(temp_order, order):
+        counts[(t, s)] += 1
+
+    for t in set(temp_order):
+        assert counts[(t, 1)] == counts[(t, 2)]
+

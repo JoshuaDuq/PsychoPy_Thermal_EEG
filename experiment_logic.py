@@ -31,32 +31,49 @@ def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_r
     return rates
 
 def generate_surface_order(temp_order, available_surfaces, max_temp):
-    """Pre-generates the thermode surface order to avoid repetition."""
+    """Pre-generate a surface order balancing temperatures across surfaces."""
     num_trials = len(temp_order)
     surface_order = [0] * num_trials
+    available_surfaces = list(available_surfaces)
+
+    # Determine how many times each temperature should appear on each surface
+    temp_counts = {t: temp_order.count(t) for t in set(temp_order)}
+    remaining = {}
+    n_surfaces = len(available_surfaces)
+    for t, count in temp_counts.items():
+        base = count // n_surfaces
+        extra = count % n_surfaces
+        counts = {s: base for s in available_surfaces}
+        if extra:
+            extras = np.random.choice(available_surfaces, size=extra, replace=False)
+            for s in extras:
+                counts[s] += 1
+        remaining[t] = counts
+
     last_surface_overall = None
     last_surface_max_temp = None
 
-    for i in range(num_trials):
-        current_temp = temp_order[i]
-        possible_surfaces = list(available_surfaces)
+    for i, current_temp in enumerate(temp_order):
+        candidate_surfaces = [s for s in available_surfaces if remaining[current_temp][s] > 0]
 
         # Avoid repeating the last used surface if possible
-        if last_surface_overall is not None and len(possible_surfaces) > 1:
-            choices = [s for s in possible_surfaces if s != last_surface_overall]
-            if choices: possible_surfaces = choices
+        if last_surface_overall is not None and len(candidate_surfaces) > 1:
+            choices = [s for s in candidate_surfaces if s != last_surface_overall]
+            if choices:
+                candidate_surfaces = choices
 
         # For max temp, avoid repeating the last max_temp surface
-        if current_temp == max_temp:
-            if last_surface_max_temp is not None and len(possible_surfaces) > 1:
-                choices = [s for s in possible_surfaces if s != last_surface_max_temp]
-                if choices: possible_surfaces = choices
-        
-        chosen_surface = int(np.random.choice(possible_surfaces))
+        if current_temp == max_temp and last_surface_max_temp is not None and len(candidate_surfaces) > 1:
+            choices = [s for s in candidate_surfaces if s != last_surface_max_temp]
+            if choices:
+                candidate_surfaces = choices
+
+        chosen_surface = int(np.random.choice(candidate_surfaces))
         surface_order[i] = chosen_surface
+        remaining[current_temp][chosen_surface] -= 1
         last_surface_overall = chosen_surface
         if current_temp == max_temp:
             last_surface_max_temp = chosen_surface
-            
+
     logger.debug("Pre-generated surface order: %s", surface_order)
     return surface_order
