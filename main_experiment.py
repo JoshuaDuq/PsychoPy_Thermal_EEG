@@ -384,7 +384,7 @@ if rcs:
         logger.error("EEG stop/close error: %s", e)
 
 if trigger_port and trigger_port.is_open:
-    triggering.send_state_change(trigger_port, config.TRIG_RESET)
+    trigger_port.write(config.TRIG_RESET)
     trigger_port.close()
     logger.info("Trigger port closed.")
 

@@ -31,7 +31,7 @@ The project is organized into several modules to separate concerns and improve r
 * `config.py`: A central configuration file. **Modify this file to change experiment parameters** like temperatures, timings, and trigger codes.
 * `hardware_setup.py`: Contains functions for initializing all hardware components (Thermode, EEG RCS, Trigger Port).
 * `experiment_logic.py`: Handles the logic for generating and randomizing the experimental sequences (temperature order, surface order).
-* `triggering.py`: Helper functions for sending event pulses to the EEG system. The pulse duration is set by `TRIGGER_PULSE_SECS` in `config.py`.
+* `triggering.py`: Helper functions for sending event pulses to the EEG system. All triggers automatically reset to `TRIG_RESET` after a short pulse whose duration is set by `TRIGGER_PULSE_SECS` in `config.py`.
 * `data_management.py`: Defines the data collection structure and handles the final saving of data to disk in multiple formats.
 * `pytcsii.py`: A low-level Python driver for communicating with and controlling the Medoc TCS II thermal stimulator via serial commands.
 
