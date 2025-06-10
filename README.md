@@ -1,6 +1,6 @@
 # Thermal Pain EEG Experiment
 
-This repository contains the complete PsychoPy-based code for conducting a thermal pain experiment with simultaneous EEG recording. The experiment is designed to deliver precisely controlled thermal stimuli, send accurate event markers to an EEG system, and collect behavioral pain ratings from participants.
+This repository contains a complete PsychoPy-based code for conducting a thermal pain experiment with simultaneous EEG recording. The experiment is designed to deliver precisely controlled thermal stimuli, send accurate event markers to an EEG system, and collect behavioral pain ratings from participants.
 
 The code is modular and configurable, allowing for easy adaptation to different experimental parameters.
 
