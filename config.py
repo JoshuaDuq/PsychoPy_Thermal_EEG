@@ -10,6 +10,9 @@ TRIG_STIM_OFF = b'\x08'      # Bit 3 HIGH (Stimulus Offset event)
 TRIG_PAIN_Q_ON = b'\x10'     # Bit 4 HIGH (Pain Question phase active)
 TRIG_VAS_ON = b'\x20'        # Bit 5 HIGH (VAS phase active)
 
+# --- Trigger Timing ---
+TRIGGER_PULSE_SECS = 0.002  # Duration of each trigger pulse
+
 # --- Experiment Specific Variables & Temperature Generation ---
 POSSIBLE_THERMODE_TEMPS = [44.3, 45.3, 46.3, 47.3, 48.3, 49.3]
 NUM_REPEATS_PER_TEMP = 10
