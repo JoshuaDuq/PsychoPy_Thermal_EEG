@@ -31,7 +31,7 @@ The project is organized into several modules to separate concerns and improve r
 * `config.py`: A central configuration file. **Modify this file to change experiment parameters** like temperatures, timings, and trigger codes.
 * `hardware_setup.py`: Contains functions for initializing all hardware components (Thermode, EEG RCS, Trigger Port).
 * `experiment_logic.py`: Handles the logic for generating and randomizing the experimental sequences (temperature order, surface order).
-* `triggering.py`: Helper functions for sending state-based and event-based triggers to the EEG system.
+* `triggering.py`: Helper functions for sending event pulses to the EEG system. The pulse duration is set by `TRIGGER_PULSE_SECS` in `config.py`.
 * `data_management.py`: Defines the data collection structure and handles the final saving of data to disk in multiple formats.
 * `pytcsii.py`: A low-level Python driver for communicating with and controlling the Medoc TCS II thermal stimulator via serial commands.
 
@@ -96,22 +96,22 @@ Once started, the experiment proceeds as follows:
     * **A. Inter-Trial Interval (ITI)**
         * **Visual**: A white fixation cross `+` is shown.
         * **Duration**: A random interval between 15 and 20 seconds.
-        * **Trigger**: `TRIG_ITI_START` (`0x02`) is sent at the onset and held high for the duration.
+        * **Trigger**: `TRIG_ITI_START` (`0x02`) is delivered as a brief pulse at the onset.
 
     * **B. Thermal Stimulation**
         * **Visual**: The fixation cross remains on screen.
         * **Stimulus**: The thermode ramps up from 35.0°C to the target temperature in 3.0s, holds for 7.5s, and ramps down in 2.0s.
-        * **Trigger**: `TRIG_STIM_ON` (`0x04`) is sent at the onset of the ramp-up. A `TRIG_STIM_OFF` (`0x08`) pulse is sent upon completion.
+        * **Trigger**: `TRIG_STIM_ON` (`0x04`) is delivered as a brief pulse at the ramp-up onset. A `TRIG_STIM_OFF` (`0x08`) pulse is sent upon completion.
 
     * **C. Pain Question**
         * **Visual**: The text `"Était-ce douloureux? (o/n)"` is displayed.
         * **Interaction**: The script waits for the participant to press `o` (yes) or `n` (no).
-        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x10`) is sent at the onset and held until a response is made.
+        * **Trigger**: `TRIG_PAIN_Q_ON` (`0x10`) is delivered as a brief pulse at the onset.
 
     * **D. Visual Analogue Scale (VAS)**
         * **Visual**: A rating scale appears. The instructions and anchors change based on the previous pain response (e.g., "rate the PAIN" vs. "rate the WARMTH").
         * **Interaction**: The participant moves a red marker with the `n` (left) and `m` (right) keys and confirms with `spacebar`. The routine times out after 30s.
-        * **Trigger**: `TRIG_VAS_ON` (`0x20`) is sent at the onset and held until the routine ends.
+        * **Trigger**: `TRIG_VAS_ON` (`0x20`) is delivered as a brief pulse at the onset.
 
 * **Shutdown**: After the final trial, EEG recording is stopped, hardware ports are closed, and a "Thank you" message is displayed for 5 seconds.
 
