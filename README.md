@@ -99,6 +99,7 @@ The function `generate_surface_order` assigns a specific thermode surface to eac
     * Saves continuous VAS traces in a long-format `.csv` file.
     * Creates a compressed NumPy (`.npz`) backup of all raw data structures.
 * **Centralized Configuration:** All key experimental parameters are centralized in `config.py` for easy modification.
+* **Simulation Mode:** Run `main_experiment_sim.py` to test the experiment logic without connecting to physical hardware. All hardware commands are printed to the console.
 
 ## System Requirements
 
@@ -134,6 +135,7 @@ The function `generate_surface_order` assigns a specific thermode surface to eac
 1.  Ensure all hardware is connected and powered on.
 2.  Start the BrainVision Recorder software and enable the Remote Control Server.
 3.  Run the main script from PsychoPy Coder or a terminal: `python main_experiment.py`.
+   * If you want to perform a dry run without hardware, execute `python main_experiment_sim.py` instead. This simulation prints all hardware commands to the console.
 4.  A dialog box will appear. Fill in the following information:
     * `participant`: The participant ID (default: `sub0000`).
     * `com_thermode`: The COM port for the thermode (default: `COM15`).
@@ -184,6 +186,7 @@ Three data files are saved in a directory named `data/<participant_id>/`.
 | File | Description |
 | :--- | :--- |
 | `main_experiment.py` | The main executable script that controls the experiment flow, initializes hardware, presents stimuli, and manages the trial loop. |
+| `main_experiment_sim.py` | Simulation-only version of the experiment that stubs out hardware access and prints all commands. |
 | `config.py` | Contains all user-configurable parameters, including triggers, timings, and temperatures. |
 | `hardware_setup.py` | Handles the initialization of the thermode, trigger port, and BrainProducts RCS. |
 | `experiment_logic.py` | Contains functions for generating the pseudo-randomized temperature and surface orders for the trials. |
