@@ -315,23 +315,41 @@ for this_trial in main_loop:
     win.callOnFlip(trigger_vas_onset)
     vas_start_time = core.monotonicClock.getTime()
 
-    frame_dur = win.monitorFramePeriod if getattr(win, 'monitorFramePeriod', None) else 1 / 60.0
+    frame_dur = (
+        win.monitorFramePeriod
+        if getattr(win, "monitorFramePeriod", None)
+        else 1 / 60.0
+    )
 
     # Each Frame Loop
     while continue_routine:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
-        # Handle movement keys using the approach from Builder to detect
-        # whether the most recent key event is still being held.
-        keys = kb.getKeys(['m', 'n'], waitRelease=False, clear=False)
-        if keys and keys[-1].duration is None:
-            key = keys[-1].name
-            if key == 'm':
+        # Collect all relevant key presses without clearing the buffer
+        keys = kb.getKeys(
+            ["m", "n", "space", "s", "escape"], waitRelease=False, clear=False
+        )
+
+        # Movement keys rely on the last event and require the key to still be held
+        move_keys = [k for k in keys if k.name in ["m", "n"]]
+        if move_keys and move_keys[-1].duration is None:
+            key = move_keys[-1].name
+            if key == "m":
                 current_pos = min(100.0, current_pos + increment)
                 interaction_occurred = True
-            elif key == 'n':
+            elif key == "n":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
+
+        # Check for confirmation or abort actions
+        action_names = {k.name for k in keys}
+        if "escape" in action_names:
+            core.quit()
+        if "s" in action_names:
+            main_loop.finished = True
+            continue_routine = False
+        if "space" in action_names:
+            continue_routine = False
         
         # Update marker position
         marker_x = -0.5 + (current_pos / 100.0)
@@ -348,16 +366,6 @@ for this_trial in main_loop:
             vas_time_trace.append(elapsed_time)
             last_sample_time = elapsed_time
 
-        # Check for confirmation or timeout
-        action_keys = event.getKeys(keyList=['space', 's', 'escape'])
-        if action_keys:
-            if 'escape' in action_keys: core.quit()
-            if 's' in action_keys:
-                main_loop.finished = True # End trials loop
-                continue_routine = False
-            if 'space' in action_keys:
-                continue_routine = False
-        
         if elapsed_time >= config.VAS_MAX_DURATION_SECS:
             continue_routine = False
 
