@@ -113,7 +113,7 @@ def save_all_data(exp_info, exp_name, data, this_dir):
             'vas_end_time': data['vas_end_time']
         })
         summary_filename = os.path.join(participant_dir, f"{base_filename}_TrialSummary.csv")
-        summary_df.to_csv(summary_filename, index=False, float_format='%.2f', na_rep='NA')
+        summary_df.to_csv(summary_filename, index=False, na_rep='NA')
         print(f"Trial summary saved to {summary_filename}")
     except Exception as e:
         print(f"ERROR saving summary CSV: {e}")
