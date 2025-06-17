@@ -173,6 +173,7 @@ Three data files are saved in a directory named `data/<participant_id>/`.
     * This file contains one row per trial with key outcome measures and timestamps.
     * Key columns include `trial_number`, `stimulus_temp`, `selected_surface`, `pain_binary_coded` (1 for painful, 0 for non-painful), `vas_final_coded_rating`, and timestamps for each routine.
     * The VAS rating is coded with an offset of 100 for painful trials.
+    * Timestamps are written with full floating point precision, so no rounding is applied in the output CSV.
 
 2.  **VAS Traces (`*_VASTraces_Long.csv`)**
     * This file contains continuous VAS rating data in a long format.
