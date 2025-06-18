@@ -6,11 +6,28 @@ import logging
 logger = logging.getLogger(__name__)
 
 def generate_temperature_order(temps, repeats):
-    """Creates and shuffles the temperature order for all trials."""
-    order = np.tile(temps, repeats)
+    """Creates and shuffles the temperature order for all trials with the
+    maximum temperature forced to appear first."""
+
+    order = np.tile(temps, repeats).tolist()
+
+    if not order:
+        logger.debug("Empty temperature list provided.")
+        return order
+
+    max_temp = max(temps)
+
+    # Remove a single instance of the maximum temperature to place at the start
+    try:
+        order.remove(max_temp)
+    except ValueError:
+        pass  # Should not happen, but gracefully continue
+
     np.random.shuffle(order)
-    logger.debug("Randomized temperature order generated: %s", order)
-    return order.tolist()
+    order.insert(0, max_temp)
+
+    logger.debug("Randomized temperature order generated with max first: %s", order)
+    return order
 
 def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_rate):
     """Precalculate rise and return rates for each possible temperature."""
