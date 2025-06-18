@@ -19,6 +19,7 @@ def test_generate_temperature_order_length_and_shuffle():
     assert sorted(order) == sorted(temps * repeats)
     # With the seed above the order should be shuffled
     assert order != temps * repeats
+    assert order[0] == max(temps)
 
 
 def test_precalculate_ramp_rates_keys():
