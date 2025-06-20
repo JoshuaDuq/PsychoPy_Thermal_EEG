@@ -1,5 +1,6 @@
 import os, sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import numpy as np
 import pytest
@@ -7,6 +8,7 @@ from experiment_logic import (
     generate_temperature_order,
     precalculate_ramp_rates,
     generate_surface_order,
+    generate_run_trial_lists,
 )
 
 
@@ -24,7 +26,9 @@ def test_generate_temperature_order_length_and_shuffle():
 
 def test_precalculate_ramp_rates_keys():
     temps = [40, 50]
-    rates = precalculate_ramp_rates(temps, baseline=35, ramp_up_secs=3, ramp_down_secs=2, min_rate=0.1)
+    rates = precalculate_ramp_rates(
+        temps, baseline=35, ramp_up_secs=3, ramp_down_secs=2, min_rate=0.1
+    )
     for t in temps:
         assert t in rates
         assert set(rates[t].keys()) == {"rise", "return"}
@@ -52,3 +56,25 @@ def test_generate_surface_order_balanced_distribution():
     for t in set(temp_order):
         assert counts[(t, 1)] == counts[(t, 2)]
 
+
+def test_generate_run_trial_lists_properties():
+    np.random.seed(3)
+    temps = [44.3, 45.3, 46.3, 47.3, 48.3, 49.3]
+    surfaces = [1, 2, 3, 4, 5]
+    runs = generate_run_trial_lists(temps, surfaces)
+
+    assert len(runs) == 5
+    for run in runs:
+        assert len(run) == 12
+        # ensure no immediate repeat of surfaces
+        assert all(run[i][1] != run[i - 1][1] for i in range(1, len(run)))
+
+    # each pair occurs exactly twice overall
+    counts = {}
+    for run in runs:
+        for pair in run:
+            counts[pair] = counts.get(pair, 0) + 1
+    assert all(count == 2 for count in counts.values())
+
+    # run 1 first pair fixed
+    assert runs[0][0] == (max(temps), surfaces[0])

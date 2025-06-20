@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def generate_temperature_order(temps, repeats):
     """Creates and shuffles the temperature order for all trials with the
     maximum temperature forced to appear first."""
@@ -29,6 +30,7 @@ def generate_temperature_order(temps, repeats):
     logger.debug("Randomized temperature order generated with max first: %s", order)
     return order
 
+
 def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_rate):
     """Precalculate rise and return rates for each possible temperature."""
     temps_arr = np.asarray(temps, dtype=float)
@@ -41,11 +43,12 @@ def precalculate_ramp_rates(temps, baseline, ramp_up_secs, ramp_down_secs, min_r
     ret = np.where(diff > 0, np.maximum(ret, min_rate), 10.0)
 
     rates = {
-        float(t): {'rise': float(r), 'return': float(d)}
+        float(t): {"rise": float(r), "return": float(d)}
         for t, r, d in zip(temps_arr, rise, ret)
     }
     logger.debug("Pre-calculated ramp rates: %s", rates)
     return rates
+
 
 def generate_surface_order(temp_order, available_surfaces, max_temp):
     """Pre-generate a surface order balancing temperatures across surfaces."""
@@ -71,7 +74,9 @@ def generate_surface_order(temp_order, available_surfaces, max_temp):
     last_surface_max_temp = None
 
     for i, current_temp in enumerate(temp_order):
-        candidate_surfaces = [s for s in available_surfaces if remaining[current_temp][s] > 0]
+        candidate_surfaces = [
+            s for s in available_surfaces if remaining[current_temp][s] > 0
+        ]
 
         # Avoid repeating the last used surface if possible
         if last_surface_overall is not None and len(candidate_surfaces) > 1:
@@ -80,7 +85,11 @@ def generate_surface_order(temp_order, available_surfaces, max_temp):
                 candidate_surfaces = choices
 
         # For max temp, avoid repeating the last max_temp surface
-        if current_temp == max_temp and last_surface_max_temp is not None and len(candidate_surfaces) > 1:
+        if (
+            current_temp == max_temp
+            and last_surface_max_temp is not None
+            and len(candidate_surfaces) > 1
+        ):
             choices = [s for s in candidate_surfaces if s != last_surface_max_temp]
             if choices:
                 candidate_surfaces = choices
@@ -94,3 +103,74 @@ def generate_surface_order(temp_order, available_surfaces, max_temp):
 
     logger.debug("Pre-generated surface order: %s", surface_order)
     return surface_order
+
+
+def _pseudo_randomize_pairs(pairs, start_surface=None):
+    """Return a new order of ``pairs`` with no immediate surface repeats."""
+    pairs = list(pairs)
+    result = []
+    last_surface = start_surface
+
+    while pairs:
+        candidates = [p for p in pairs if p[1] != last_surface]
+        if not candidates:
+            candidates = pairs  # fallback when only repeats remain
+        chosen = candidates[np.random.randint(len(candidates))]
+        pairs.remove(chosen)
+        result.append(chosen)
+        last_surface = chosen[1]
+
+    return result
+
+
+def generate_run_trial_lists(temps, surfaces, *, rng=None):
+    """Create five trial lists of 12 (temp, surface) pairs each.
+
+    The lists collectively cover every temperature/surface combination twice.
+    The first run's first trial is fixed to ``(max(temps), surfaces[0])``.
+    Within each list, surfaces are pseudo-randomized so no surface is repeated
+    consecutively when possible.
+    """
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    max_temp = max(temps)
+    master = [(t, s) for t in temps for s in surfaces for _ in range(2)]
+
+    first_pair = (max_temp, surfaces[0])
+    master.remove(first_pair)
+
+    run_lists = []
+
+    # --- Run 1 ---
+    run1_remaining = rng.choice(len(master), size=11, replace=False)
+    run1_pairs = [master[i] for i in run1_remaining]
+    for idx in sorted(run1_remaining, reverse=True):
+        master.pop(idx)
+    run1_order = [first_pair] + _pseudo_randomize_pairs(
+        run1_pairs, start_surface=first_pair[1]
+    )
+    run_lists.append(run1_order)
+
+    rng.shuffle(master)
+    for _ in range(4):
+        chunk = master[:12]
+        master = master[12:]
+        run_lists.append(_pseudo_randomize_pairs(chunk))
+
+    return run_lists
+
+
+def get_or_create_run_trial_lists(path, temps, surfaces):
+    """Load trial lists from ``path`` or generate and save them."""
+    import json, os
+
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+
+    lists = generate_run_trial_lists(temps, surfaces)
+    with open(path, "w") as f:
+        json.dump(lists, f)
+    return lists
