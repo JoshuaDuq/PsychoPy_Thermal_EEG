@@ -348,7 +348,6 @@ for this_trial in main_loop:
     interaction_occurred = False
     vas_timer = core.Clock()
     last_sample_time = 0.0
-    held_moves = set()
 
     context_is_painful = True if pain_response == 1 else False
     if context_is_painful:
@@ -429,32 +428,22 @@ for this_trial in main_loop:
             filtered_keys.append(k)
         keys = filtered_keys
 
-        # Update held movement keys while respecting boundaries
+        # Update held movement keys
         for k in keys:
             if k.name in ["m", "n"]:
                 if k.duration is None:
-                    if not (
-                        (k.name == "m" and current_pos >= 100.0)
-                        or (k.name == "n" and current_pos <= 0.0)
-                    ):
-                        held_moves.add(k.name)
+                    held_moves.add(k.name)
                 else:
                     held_moves.discard(k.name)
-
-        # Automatically release held keys when at boundaries
-        if current_pos >= 100.0:
-            held_moves.discard("m")
-        if current_pos <= 0.0:
-            held_moves.discard("n")
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
         if move_keys and move_keys[-1].duration is None:
             key = move_keys[-1].name
-            if key == "m" and current_pos < 100.0:
+            if key == "m":
                 current_pos = min(100.0, current_pos + increment)
                 interaction_occurred = True
-            elif key == "n" and current_pos > 0.0:
+            elif key == "n":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
 
@@ -467,7 +456,9 @@ for this_trial in main_loop:
             continue_routine = False
 
         confirm_pressed = "space" in action_names
-        move_held = bool(held_moves)
+        move_held = any(
+            k.name in ["m", "n"] and k.duration is None for k in keys
+        )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
         if confirm_pressed and not (move_held and at_boundary):
