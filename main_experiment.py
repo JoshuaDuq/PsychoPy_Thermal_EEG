@@ -379,11 +379,18 @@ for this_trial in main_loop:
         win, text=right_txt, pos=(0.5, -0.06), height=0.035, anchorHoriz="center"
     )
 
+    # Start the VAS with a fresh keyboard instance so any held keys from the
+    # previous trial cannot influence the slider at onset. If the participant is
+    # still physically holding 'm' or 'n' when the new scale appears, we ignore
+    # that key until it is released once.
+    kb = keyboard.Keyboard()
+    ignore_until_release = {k.name for k in kb.getKeys(["m", "n"], waitRelease=False)}
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
+
     waiting_for_release = False
 
     def trigger_vas_onset():
@@ -406,9 +413,29 @@ for this_trial in main_loop:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
         # Collect all relevant key presses without clearing the buffer
+
         keys = kb.getKeys(
             ["m", "n", "space", "s", "escape"], waitRelease=False, clear=False
         )
+        keys = [k for k in keys if k.tDown >= vas_start_time]
+
+        # Ignore any key presses that were already held when this VAS started
+        filtered_keys = []
+        for k in keys:
+            if k.name in ignore_until_release:
+                if k.duration is not None:
+                    ignore_until_release.discard(k.name)
+                continue
+            filtered_keys.append(k)
+        keys = filtered_keys
+
+        # Update held movement keys
+        for k in keys:
+            if k.name in ["m", "n"]:
+                if k.duration is None:
+                    held_moves.add(k.name)
+                else:
+                    held_moves.discard(k.name)
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
@@ -436,6 +463,7 @@ for this_trial in main_loop:
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
         if confirm_pressed and not (move_held and at_boundary):
+
             continue_routine = False
 
         # Update marker position
@@ -456,6 +484,7 @@ for this_trial in main_loop:
             vas_rating_trace.append(current_pos)
             vas_time_trace.append(elapsed_time)
             last_sample_time = elapsed_time
+
 
         if elapsed_time >= config.VAS_MAX_DURATION_SECS:
             if move_held and at_boundary:

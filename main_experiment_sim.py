@@ -427,11 +427,17 @@ for this_trial in main_loop:
         win, text=right_txt, pos=(0.5, -0.06), height=0.035, anchorHoriz="center"
     )
 
+    # Use a fresh keyboard object so any keys held from the previous trial do
+    # not carry over into the next VAS. If 'm' or 'n' is still held down when the
+    # scale appears, ignore that key until it is released once.
+    kb = keyboard.Keyboard()
+    ignore_until_release = {k.name for k in kb.getKeys(["m", "n"], waitRelease=False)}
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
+
     waiting_for_release = False
 
     def trigger_vas_onset():
@@ -454,9 +460,29 @@ for this_trial in main_loop:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
         # Collect all relevant key presses without clearing the buffer
+
         keys = kb.getKeys(
             ["m", "n", "space", "s", "escape"], waitRelease=False, clear=False
         )
+        keys = [k for k in keys if k.tDown >= vas_start_time]
+
+        # Ignore keys that were held when this VAS appeared
+        filtered_keys = []
+        for k in keys:
+            if k.name in ignore_until_release:
+                if k.duration is not None:
+                    ignore_until_release.discard(k.name)
+                continue
+            filtered_keys.append(k)
+        keys = filtered_keys
+
+        # Update held movement keys
+        for k in keys:
+            if k.name in ["m", "n"]:
+                if k.duration is None:
+                    held_moves.add(k.name)
+                else:
+                    held_moves.discard(k.name)
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
