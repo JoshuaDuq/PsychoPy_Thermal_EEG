@@ -446,7 +446,11 @@ for this_trial in main_loop:
         if "s" in action_names:
             main_loop.finished = True
             continue_routine = False
-        if "space" in action_names:
+        confirm_pressed = "space" in action_names
+        move_held = any(
+            k.name in ["m", "n"] and k.duration is None for k in keys
+        )
+        if confirm_pressed and not move_held:
             continue_routine = False
 
         # Update marker position
