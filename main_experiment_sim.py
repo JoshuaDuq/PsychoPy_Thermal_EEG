@@ -475,7 +475,11 @@ for this_trial in main_loop:
         if "s" in action_names:
             main_loop.finished = True
             continue_routine = False
-        if "space" in action_names:
+        confirm_pressed = "space" in action_names
+        move_held = any(
+            k.name in ["m", "n"] and k.duration is None for k in keys
+        )
+        if confirm_pressed and not move_held:
             continue_routine = False
 
         # Update marker position
@@ -497,7 +501,8 @@ for this_trial in main_loop:
             vas_time_trace.append(elapsed_time)
             last_sample_time = elapsed_time
 
-        if elapsed_time >= config.VAS_MAX_DURATION_SECS:
+        if elapsed_time >= config.VAS_MAX_DURATION_SECS and not move_held:
+            # Wait for movement keys to be released so state doesn't carry over
             continue_routine = False
 
     # End Routine
