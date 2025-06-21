@@ -458,6 +458,7 @@ for this_trial in main_loop:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
         # Collect all relevant key presses without clearing the buffer
+
         keys = kb.getKeys(
             ["m", "n", "space", "s", "escape"], waitRelease=False, clear=False
         )
@@ -472,6 +473,7 @@ for this_trial in main_loop:
                 continue
             filtered_keys.append(k)
         keys = filtered_keys
+
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
