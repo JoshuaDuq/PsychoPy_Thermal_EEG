@@ -391,6 +391,7 @@ for this_trial in main_loop:
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
     waiting_for_release = False
+    held_moves = set()
 
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -461,7 +462,7 @@ for this_trial in main_loop:
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
-        if confirm_pressed and not (move_held and at_boundary):
+        if confirm_pressed and not move_held:
             continue_routine = False
 
         # Update marker position

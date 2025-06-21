@@ -483,7 +483,7 @@ for this_trial in main_loop:
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
-        if confirm_pressed and not (move_held and at_boundary):
+        if confirm_pressed and not move_held:
             continue_routine = False
             
         # Update marker position
