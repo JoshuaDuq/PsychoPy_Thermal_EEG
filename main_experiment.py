@@ -31,13 +31,14 @@ exp_info = {
     "com_trigger": "COM17",
     "eeg_ip": "192.168.1.2",
     "eeg_workspace": "C:\\Users\\labmp-eeg\\Desktop\\workspace\\workspace.rwksp",  # IMPORTANT: Change this path
+    "run_number": "1",
 }
 dlg = gui.DlgFromDict(dictionary=exp_info, title="Thermal Pain Experiment")
 if not dlg.OK:
     core.quit()
 
 try:
-    run_number = int(input("Please enter run number (1-5): "))
+    run_number = int(exp_info.get("run_number", 1))
 except Exception:
     core.quit()
 if run_number not in {1, 2, 3, 4, 5}:

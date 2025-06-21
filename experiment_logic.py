@@ -105,21 +105,29 @@ def generate_surface_order(temp_order, available_surfaces, max_temp):
     return surface_order
 
 
-def _pseudo_randomize_pairs(pairs, start_surface=None):
+def _pseudo_randomize_pairs(pairs, start_surface=None, *, rng=None, max_attempts=100):
     """Return a new order of ``pairs`` with no immediate surface repeats."""
+    if rng is None:
+        rng = np.random.default_rng()
+
     pairs = list(pairs)
-    result = []
-    last_surface = start_surface
+    for _ in range(max_attempts):
+        remaining = pairs.copy()
+        result = []
+        last_surface = start_surface
+        while remaining:
+            candidates = [p for p in remaining if p[1] != last_surface]
+            if not candidates:
+                candidates = remaining  # fallback when only repeats remain
+            chosen = candidates[rng.integers(len(candidates))]
+            remaining.remove(chosen)
+            result.append(chosen)
+            last_surface = chosen[1]
 
-    while pairs:
-        candidates = [p for p in pairs if p[1] != last_surface]
-        if not candidates:
-            candidates = pairs  # fallback when only repeats remain
-        chosen = candidates[np.random.randint(len(candidates))]
-        pairs.remove(chosen)
-        result.append(chosen)
-        last_surface = chosen[1]
+        if all(result[i][1] != result[i - 1][1] for i in range(1, len(result))):
+            return result
 
+    # Fallback to last generated result even if repeats remain
     return result
 
 
@@ -149,7 +157,7 @@ def generate_run_trial_lists(temps, surfaces, *, rng=None):
     for idx in sorted(run1_remaining, reverse=True):
         master.pop(idx)
     run1_order = [first_pair] + _pseudo_randomize_pairs(
-        run1_pairs, start_surface=first_pair[1]
+        run1_pairs, start_surface=first_pair[1], rng=rng
     )
     run_lists.append(run1_order)
 
@@ -157,7 +165,7 @@ def generate_run_trial_lists(temps, surfaces, *, rng=None):
     for _ in range(4):
         chunk = master[:12]
         master = master[12:]
-        run_lists.append(_pseudo_randomize_pairs(chunk))
+        run_lists.append(_pseudo_randomize_pairs(chunk, rng=rng))
 
     return run_lists
 

@@ -142,9 +142,9 @@ The function `generate_surface_order` assigns a specific thermode surface to eac
     * `com_trigger`: The COM port for the trigger device (default: `COM17`).
     * `eeg_ip`: The IP address of the EEG recording computer (default: `192.168.1.2`).
     * `eeg_workspace`: Verify the path to the EEG workspace file is correct.
-5.  Click **OK** to start. The script initializes hardware before beginning the welcome screen.
-6.  When prompted in the terminal, enter the run number (1‑5). Each run executes one pre-generated list of 12 trials. Restart the script for each successive run.
-7.  To quit the experiment at any time, press the `Escape` key.
+    * `run_number`: The run list to execute (1‑5).
+5.  Click **OK** to start. The script initializes hardware before beginning the welcome screen. Each run executes one pre-generated list of 12 trials. Restart the script for each successive run.
+6.  To quit the experiment at any time, press the `Escape` key.
 
 ## Customization
 
