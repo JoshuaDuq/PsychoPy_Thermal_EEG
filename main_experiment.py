@@ -385,6 +385,7 @@ for this_trial in main_loop:
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
+
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
 
