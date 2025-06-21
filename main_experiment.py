@@ -390,6 +390,7 @@ for this_trial in main_loop:
 
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
+    held_moves = set()
 
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -427,6 +428,13 @@ for this_trial in main_loop:
             filtered_keys.append(k)
         keys = filtered_keys
 
+        # Update held movement keys
+        for k in keys:
+            if k.name in ["m", "n"]:
+                if k.duration is None:
+                    held_moves.add(k.name)
+                else:
+                    held_moves.discard(k.name)
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
@@ -447,9 +455,7 @@ for this_trial in main_loop:
             main_loop.finished = True
             continue_routine = False
         confirm_pressed = "space" in action_names
-        move_held = any(
-            k.name in ["m", "n"] and k.duration is None for k in keys
-        )
+        move_held = bool(held_moves)
         if confirm_pressed and not move_held:
             continue_routine = False
 
