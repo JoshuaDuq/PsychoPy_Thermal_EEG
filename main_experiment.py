@@ -379,6 +379,12 @@ for this_trial in main_loop:
         win, text=right_txt, pos=(0.5, -0.06), height=0.035, anchorHoriz="center"
     )
 
+    # Start the VAS with a fresh keyboard instance so any held keys from the
+    # previous trial cannot influence the slider at onset. If the participant is
+    # still physically holding 'm' or 'n' when the new scale appears, we ignore
+    # that key until it is released once.
+    kb = keyboard.Keyboard()
+    ignore_until_release = {k.name for k in kb.getKeys(["m", "n"], waitRelease=False)}
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
@@ -408,6 +414,17 @@ for this_trial in main_loop:
         keys = kb.getKeys(
             ["m", "n", "space", "s", "escape"], waitRelease=False, clear=False
         )
+        keys = [k for k in keys if k.tDown >= vas_start_time]
+
+        # Ignore any key presses that were already held when this VAS started
+        filtered_keys = []
+        for k in keys:
+            if k.name in ignore_until_release:
+                if k.duration is not None:
+                    ignore_until_release.discard(k.name)
+                continue
+            filtered_keys.append(k)
+        keys = filtered_keys
 
         # Movement keys rely on the last event and require the key to still be held
         move_keys = [k for k in keys if k.name in ["m", "n"]]
