@@ -1,4 +1,4 @@
-# Thermal Pain EEG/fMRI Experiment
+# Thermal Pain EEG Experiment
 
 This repository contains the PsychoPy Coder implementation for a thermal pain perception experiment. The experiment delivers calibrated thermal stimuli, records subjective pain ratings, and sends precise time-locking triggers to an EEG system.
 
