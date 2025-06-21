@@ -437,7 +437,8 @@ for this_trial in main_loop:
 
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
-    held_moves = set()
+
+    waiting_for_release = False
 
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -501,9 +502,14 @@ for this_trial in main_loop:
         if "s" in action_names:
             main_loop.finished = True
             continue_routine = False
+
         confirm_pressed = "space" in action_names
-        move_held = bool(held_moves)
-        if confirm_pressed and not move_held:
+        move_held = any(
+            k.name in ["m", "n"] and k.duration is None for k in keys
+        )
+        at_boundary = current_pos <= 0.0 or current_pos >= 100.0
+
+        if confirm_pressed and not (move_held and at_boundary):
             continue_routine = False
 
         # Update marker position
@@ -525,8 +531,13 @@ for this_trial in main_loop:
             vas_time_trace.append(elapsed_time)
             last_sample_time = elapsed_time
 
-        if elapsed_time >= config.VAS_MAX_DURATION_SECS and not move_held:
-            # Wait for movement keys to be released so state doesn't carry over
+        if elapsed_time >= config.VAS_MAX_DURATION_SECS:
+            if move_held and at_boundary:
+                waiting_for_release = True
+            else:
+                continue_routine = False
+
+        if waiting_for_release and not move_held:
             continue_routine = False
 
     # End Routine
