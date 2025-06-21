@@ -106,7 +106,7 @@ The function `generate_surface_order` assigns a specific thermode surface to eac
 ### Software
 * **PsychoPy**
 * **Python 3.x**
-* **Required Python Libraries:**
+* **Required Python Libraries:** (also listed in `requirements.txt`)
     * `pandas`
     * `numpy`
     * `pyserial`
@@ -121,7 +121,7 @@ The function `generate_surface_order` assigns a specific thermode surface to eac
 ## Setup and Installation
 
 1.  **Clone or download the repository.**
-2.  **Install required Python libraries** (e.g., `pip install pandas numpy pyserial psychopy`).
+2.  **Install required Python libraries** by running `pip install -r requirements.txt` from the repository root. This installs packages such as `numpy`, `pandas`, `pyserial`, and `psychopy`.
 3.  **Connect Hardware:**
     * Connect the thermode and triggering device to the computer and identify their COM ports.
     * Ensure the PsychoPy computer is on the same network as the BrainProducts RCS.
