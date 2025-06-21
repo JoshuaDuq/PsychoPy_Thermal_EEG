@@ -379,14 +379,12 @@ for this_trial in main_loop:
         win, text=right_txt, pos=(0.5, -0.06), height=0.035, anchorHoriz="center"
     )
 
+    # Start the VAS with a fresh keyboard instance so any held keys from the
+    # previous trial cannot influence the slider at onset.
+    kb = keyboard.Keyboard()
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
-    # Ensure no movement keys are still considered held from the last trial
-    while kb.getKeys(["m", "n"], waitRelease=False, clear=False):
-        core.wait(0.01)
-        kb.clearEvents()
-        event.clearEvents(eventType="keyboard")
 
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
