@@ -8,6 +8,7 @@ import triggering
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+event.globalKeys.add(key="escape", func=core.quit)
 
 # -----------------------------------------------------------------
 # 1. Participant/Session Info
