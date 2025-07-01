@@ -1,10 +1,16 @@
 import os
+import csv
 import logging
 from psychopy import core, visual, event, gui, data
 
 import config
 import hardware_setup as hw
 import triggering
+
+# --- Baseline Trigger Codes (hex) ---
+TRIG_RESET = b"\x00"             # all lines low
+TRIG_EEG_REC_START = b"\x30"     # baseline EEG recording start
+TRIG_BASELINE_START = b"\x31"    # baseline period onset
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,6 +29,14 @@ exp_info = {
 dlg = gui.DlgFromDict(dictionary=exp_info, title="5-Min Baseline EEG")
 if not dlg.OK:
     core.quit()
+
+_thisDir = os.path.dirname(os.path.abspath(__file__))
+participant_dir = os.path.join(_thisDir, "data", exp_info["participant"])
+os.makedirs(participant_dir, exist_ok=True)
+csv_path = os.path.join(
+    participant_dir,
+    f"{exp_info['participant']}_BaselineEEG_{exp_info['date']}_Summary.csv",
+)
 
 # -----------------------------------------------------------------
 # 2. Initialize Hardware
@@ -57,25 +71,45 @@ fixation_cross = visual.TextStim(win, text="+", height=0.1, color="white")
 # -----------------------------------------------------------------
 # 4. Start EEG Recording
 # -----------------------------------------------------------------
+rcs_start_status = "skipped_rcs_not_available"
+eeg_rec_command_time = None
 if rcs:
     try:
         logger.info("Commanding EEG to start recording...")
         rcs.startRecording()
-        triggering.send_event_pulse(trigger_port, config.TRIG_EEG_REC_START, config.TRIG_RESET)
+        eeg_rec_command_time = core.monotonicClock.getTime()
+        triggering.send_event_pulse(trigger_port, TRIG_EEG_REC_START, TRIG_RESET)
+        rcs_start_status = "success"
     except Exception as e:
         logger.error("EEG start recording error: %s", e)
+        rcs_start_status = f"failed: {e}"
 else:
     logger.warning("EEG RCS unavailable; recording must be started manually.")
 
 # -----------------------------------------------------------------
 # 5. Baseline Period
 # -----------------------------------------------------------------
+baseline_start_time = {"t": None}
 baseline_timer = core.CountdownTimer(300.0)  # 5 minutes
+
+def mark_baseline_start():
+    baseline_start_time["t"] = core.monotonicClock.getTime()
+    if trigger_port and trigger_port.is_open:
+        trigger_port.write(TRIG_BASELINE_START)
+    else:
+        print(f"SKIPPED trigger {TRIG_BASELINE_START.hex()} (port not available/open).")
+
+win.callOnFlip(mark_baseline_start)
 while baseline_timer.getTime() > 0:
     fixation_cross.draw()
     win.flip()
     if event.getKeys(keyList=["escape"]):
         break
+baseline_end_time = core.monotonicClock.getTime()
+if trigger_port and trigger_port.is_open:
+    trigger_port.write(TRIG_RESET)
+else:
+    print(f"SKIPPED reset after baseline (port not available/open).")
 
 # -----------------------------------------------------------------
 # 6. Stop EEG and Clean Up
@@ -89,8 +123,32 @@ if rcs:
         logger.error("EEG stop/close error: %s", e)
 
 if trigger_port and trigger_port.is_open:
-    trigger_port.write(config.TRIG_RESET)
+    trigger_port.write(TRIG_RESET)
     trigger_port.close()
+
+# --- Save Baseline Session Summary ---
+log_data = {
+    "participant": exp_info["participant"],
+    "date": exp_info["date"],
+    "rcs_initialized": bool(rcs),
+    "rcs_start_status": rcs_start_status,
+    "eeg_rec_command_time": eeg_rec_command_time,
+    "baseline_start_time": baseline_start_time["t"],
+    "baseline_end_time": baseline_end_time,
+    "duration_secs": round(
+        baseline_end_time - baseline_start_time["t"], 4
+    )
+    if baseline_start_time["t"] is not None
+    else None,
+}
+try:
+    with open(csv_path, "w", newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=log_data.keys())
+        writer.writeheader()
+        writer.writerow(log_data)
+    logger.info("Baseline summary saved to %s", csv_path)
+except Exception as e:
+    logger.error("ERROR saving baseline summary: %s", e)
 
 win.close()
 core.quit()
