@@ -361,8 +361,8 @@ TRIG_RESET = b'\x00'
 
 ## Support
 
-For technical support, see the [Troubleshooting](#troubleshooting) section or consult the development team.
+For technical support, create an issue please.
 
 ## License
 
-This project is open source. See LICENSE file for details.
+This project is open source.
