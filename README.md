@@ -4,15 +4,17 @@ A PsychoPy-based experimental platform for thermal pain perception research with
 
 ## 🚀 Quick Start
 
-**For experienced users:**
-1. `pip install -r requirements.txt`
-2. Connect hardware: TCSII thermode, EEG trigger interface
-3. Configure COM ports and EEG IP in the startup dialog
-4. Run: `python main_experiment.py`
+**📋 Requirements:**
+- **PsychoPy Coder (IDE) 2024.2.4+** - Download from [psychopy.org](https://www.psychopy.org/download.html)
 
-**For first-time setup:** See [Installation Guide](#installation-guide) below.
+**🎯 Running the Experiment:**
+1. **Install PsychoPy Coder (IDE) 2024.2.4+**
+2. **Open PsychoPy Coder**
+3. **Load experiment file:** Open `main_experiment.py` or `main_experiment_sim.py`
+4. **Configure hardware:** Set COM ports and EEG IP in the startup dialog
+5. **Run:** Click the green "Run" button
 
-**Testing without hardware:** Run `python main_experiment_sim.py`
+**Testing without hardware:** Use `main_experiment_sim.py` (simulation mode)
 
 ## Table of Contents
 
@@ -71,20 +73,31 @@ Each trial follows this sequence:
 ## Installation Guide
 
 ### 1. System Requirements
-- **OS**: Windows 10/11 (primary), Linux/Mac (limited support)
-- **Python**: 3.8+ recommended
+- **OS**: Windows 10/11 (primary), Linux/Mac (supported)
+- **Software**: PsychoPy Coder (IDE) 2024.2.4+ **REQUIRED**
 - **Hardware**: See [Hardware Requirements](#hardware-requirements)
 
 ### 2. Software Installation
-```bash
-# Create virtual environment (recommended)
-python -m venv thermal_pain_env
-thermal_pain_env\Scripts\activate  # Windows
-# source thermal_pain_env/bin/activate  # Linux/Mac
 
-# Install dependencies
-pip install -r requirements.txt
-```
+#### **PsychoPy Coder (IDE) Installation**
+1. **Download PsychoPy**: Visit [psychopy.org](https://www.psychopy.org/download.html)
+2. **Install PsychoPy Coder 2024.2.4+**: Follow the installer instructions
+3. **Launch PsychoPy Coder**: The IDE handles all dependencies automatically
+4. **Clone/Download this repository**: Get the experiment files
+5. **Open experiment files**: Load `main_experiment.py` or `main_experiment_sim.py` in PsychoPy Coder
+6. **Run the experiment**: Click the green "Run" button
+
+✅ **Why PsychoPy Coder is Required**:
+- **All dependencies included**: No pip, virtual environments, or package conflicts
+- **Tested compatibility**: Guaranteed to work with all experiment features
+- **Simplified workflow**: No command-line setup needed
+- **Cross-platform**: Works identically on Windows, Linux, and Mac
+- **Version control**: Ensures consistent PsychoPy version across users
+
+#### Common Installation Issues
+- **Download issues**: Ensure you download from the official PsychoPy website: [psychopy.org](https://www.psychopy.org/download.html)
+- **Version compatibility**: Use PsychoPy Coder 2024.2.4+ (older versions may not work)
+- **Platform-specific**: Windows/Linux/Mac installers are available separately
 
 ### 3. Hardware Drivers
 | Component | Driver Source |
@@ -93,11 +106,22 @@ pip install -r requirements.txt
 | **EEG System** | BrainProducts drivers + RCS software |
 | **Trigger Interface** | Serial device drivers |
 
+### 3. Installation Verification
+
+1. **Open PsychoPy Coder**
+2. **Load test file**: Open `main_experiment_sim.py`
+3. **Click the green "Run" button**
+4. **Success indicators**:
+   - Startup dialog appears for hardware configuration
+   - Experiment window launches in simulation mode
+   - No error messages in the output panel
+   - All GUI elements display correctly
+
 ### 4. Initial Configuration
 1. **Identify COM Ports**: Windows Device Manager → Ports (COM & LPT)
 2. **Network Setup**: Configure EEG computer IP address
 3. **EEG Workspace**: Create .rwksp file with appropriate montage
-4. **Test Connections**: Run `python main_experiment_sim.py`
+4. **Test Connections**: Run `main_experiment_sim.py` in PsychoPy Coder
 
 ## Running the Experiment
 
@@ -111,9 +135,9 @@ pip install -r requirements.txt
 ### Execution Steps
 
 #### 1. Launch Experiment
-```bash
-python main_experiment.py
-```
+1. **Open PsychoPy Coder**
+2. **Load experiment file**: Open `main_experiment.py`
+3. **Click the green "Run" button**
 
 #### 2. Configure Parameters
 | Parameter | Example | Description |
@@ -193,12 +217,7 @@ Stimulus Computer ─┬─[Serial]─→ TCSII Thermode
 
 ### TCSII Thermode
 1. **Physical Setup**: Mount on adjustable arm, ensure stable forearm contact
-2. **Test Communication**: 
-   ```python
-   from pytcsii import tcsii_serial
-   thermode = tcsii_serial('COM15', baseline=35.0)
-   thermode.print_temp()
-   ```
+2. **Test Communication**: Run `main_experiment_sim.py` in PsychoPy Coder to verify thermode connection
 3. **Safety Check**: Verify temperature limits and emergency stop
 
 ### EEG System
@@ -207,13 +226,13 @@ Stimulus Computer ─┬─[Serial]─→ TCSII Thermode
 3. **Trigger Testing**: Run simulation mode, verify trigger reception
 
 ### System Integration
-```bash
-# Full system test
-python main_experiment_sim.py  # Verify all hardware commands
+**Full system test**:
+1. Open `main_experiment_sim.py` in PsychoPy Coder
+2. Click "Run" to verify all hardware commands work in simulation
 
-# Hardware integration test  
-python main_experiment.py     # Single trial with actual hardware
-```
+**Hardware integration test**:
+1. Open `main_experiment.py` in PsychoPy Coder  
+2. Click "Run" for single trial with actual hardware
 
 ## Configuration
 
@@ -248,6 +267,15 @@ TRIG_RESET = b'\x00'
 
 ## Troubleshooting
 
+### Installation Issues
+
+| Problem | Solution |
+|---------|----------|
+| **PsychoPy won't install** | Download from official site: [psychopy.org](https://www.psychopy.org/download.html) |
+| **Experiment won't run** | Ensure you're using PsychoPy Coder 2024.2.4+, not an older version |
+| **Missing files error** | Ensure all experiment files are in the same directory |
+| **Hardware connection issues** | Run `main_experiment_sim.py` first to test without hardware |
+
 ### Quick Fixes
 
 | Problem | Solution |
@@ -259,19 +287,18 @@ TRIG_RESET = b'\x00'
 | **Data saving failed** | Check disk space, verify file permissions |
 
 ### Diagnostic Commands
-```bash
-# Check COM ports
-python -c "import serial.tools.list_ports; print(list(serial.tools.list_ports.comports()))"
 
-# Test thermode
-python -c "from pytcsii import tcsii_serial; tcsii_serial('COM15')"
+**Check COM ports**: Windows Device Manager → Ports (COM & LPT)
 
-# Network test
-ping 192.168.1.2
+**Test thermode**: Run simulation mode in PsychoPy Coder to verify communication
 
-# Debug mode
-# Edit main_experiment.py: logging.basicConfig(level=logging.DEBUG)
-```
+**Network test**: 
+- Windows: `ping 192.168.1.2`
+- Check EEG computer connectivity
+
+**Debug mode**: 
+- Edit `main_experiment.py` in PsychoPy Coder
+- Uncomment: `logging.basicConfig(level=logging.DEBUG)`
 
 ### Common Issues
 
@@ -306,14 +333,12 @@ ping 192.168.1.2
 4. Extend data collection
 
 #### Testing
-```bash
-# Unit tests
-python -m pytest tests/
 
-# Integration testing
-python main_experiment_sim.py  # Simulation
-python main_experiment.py      # Hardware test
-```
+**Unit tests**: Open test files in PsychoPy Coder and run individually
+
+**Integration testing**:
+- **Simulation**: Run `main_experiment_sim.py` in PsychoPy Coder
+- **Hardware test**: Run `main_experiment.py` in PsychoPy Coder
 
 ### Key Implementation Details
 
@@ -340,4 +365,4 @@ For technical support, see the [Troubleshooting](#troubleshooting) section or co
 
 ## License
 
-This project is open source.
+This project is open source. See LICENSE file for details.
