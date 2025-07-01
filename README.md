@@ -63,7 +63,7 @@ Each trial follows this sequence:
 - **5 Runs Total**: 12 trials each (60 trials total) (see Lee, Lee, & Woo, 2025)
 - **Complete Coverage**: Every temperature × surface combination tested exactly twice
 - **Constraint Randomization**: No consecutive stimulation on same surface
-- **Fixed First Trial**: Run 1 always starts with maximum temperature (Jepma, Jones, & Wager, 2014)
+- **Fixed First Trial**: Run 1 always starts with maximum temperature (see Jepma, Jones, & Wager, 2014)
 
 ### Stimulus Parameters
 - **Temperatures**: 44.3°C, 45.3°C, 46.3°C, 47.3°C, 48.3°C, 49.3°C
