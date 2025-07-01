@@ -2,12 +2,12 @@
 
 A PsychoPy-based experimental platform for thermal pain perception research with synchronized EEG recording. Delivers precisely controlled thermal stimuli via TCSII thermode while recording subjective pain responses and neural activity.
 
-## 🚀 Quick Start
+## Quick Start
 
-**📋 Requirements:**
+** Requirements:**
 - **PsychoPy Coder (IDE) 2024.2.4+** - Download from [psychopy.org](https://www.psychopy.org/download.html)
 
-**🎯 Running the Experiment:**
+** Running the Experiment:**
 1. **Install PsychoPy Coder (IDE) 2024.2.4+**
 2. **Open PsychoPy Coder**
 3. **Load experiment file:** Open `main_experiment.py` or `main_experiment_sim.py`
