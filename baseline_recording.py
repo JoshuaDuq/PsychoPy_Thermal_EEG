@@ -9,8 +9,8 @@ import triggering
 
 # --- Baseline Trigger Codes (hex) ---
 TRIG_RESET = b"\x00"             # all lines low
-TRIG_EEG_REC_START = b"\x30"     # baseline EEG recording start
-TRIG_BASELINE_START = b"\x31"    # baseline period onset
+TRIG_EEG_REC_START = b"\x01"     # baseline EEG recording start
+TRIG_BASELINE_START = b"\x02"    # baseline period onset
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
