@@ -41,6 +41,12 @@ def create_data_collector():
         Timestamp for the start of the VAS rating routine.
     vas_end_time : list[float]
         Timestamp for the end of the VAS rating routine.
+    temperature_traces : list[list[list[float]]]
+        Temperature samples for each trial as lists of lists
+        ``[[neutral, z1, z2, z3, z4, z5], ...]``.
+    temperature_times : list[list[float]]
+        Time stamps for each temperature sample in seconds from
+        stimulation onset.
     """
     return {
         'trial_number': [],
@@ -57,7 +63,9 @@ def create_data_collector():
         'pain_q_start_time': [],
         'pain_q_end_time': [],
         'vas_start_time': [],
-        'vas_end_time': []
+        'vas_end_time': [],
+        'temperature_traces': [],
+        'temperature_times': []
     }
 
 def save_all_data(exp_info, exp_name, data, this_dir):
