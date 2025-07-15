@@ -57,7 +57,9 @@ _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 
 # --- Initialize Hardware ---
-thermode = hw.initialize_thermode(exp_info["com_thermode"], config.BASELINE_TEMP)
+thermode = hw.initialize_thermode(
+    exp_info["com_thermode"], config.BASELINE_TEMP, beep=False
+)
 trigger_port = hw.initialize_trigger_port(exp_info["com_trigger"])
 rcs = hw.initialize_eeg_rcs(
     host_ip=exp_info["eeg_ip"],
