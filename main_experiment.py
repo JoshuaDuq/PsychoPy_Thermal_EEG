@@ -58,7 +58,7 @@ os.chdir(_thisDir)
 
 # --- Initialize Hardware ---
 thermode = hw.initialize_thermode(
-    exp_info["com_thermode"], config.BASELINE_TEMP, beep=False
+    exp_info["com_thermode"], config.BASELINE_TEMP
 )
 trigger_port = hw.initialize_trigger_port(exp_info["com_trigger"])
 rcs = hw.initialize_eeg_rcs(

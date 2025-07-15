@@ -63,7 +63,7 @@ base_filename = f"{exp_info['participant']}_{exp_name}_{exp_info['date']}"
 
 # --- Initialize Hardware ---
 thermode = hw.initialize_thermode(
-    exp_info["com_thermode"], config.BASELINE_TEMP, beep=False
+    exp_info["com_thermode"], config.BASELINE_TEMP
 )
 trigger_port = hw.initialize_trigger_port(exp_info["com_trigger"])
 rcs = hw.initialize_eeg_rcs(

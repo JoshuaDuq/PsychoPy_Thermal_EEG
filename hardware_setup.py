@@ -4,29 +4,15 @@ import serial
 from psychopy import core
 from pytcsii import tcsii_serial
 from psychopy.hardware import brainproducts
-
-# Import trigger definitions from your config file
 from config import TRIG_RESET
 
-def initialize_thermode(port_name, baseline_temp, beep=False):
-    """Initialize the thermode device and set its baseline temperature.
-
-    Parameters
-    ----------
-    port_name : str
-        Serial port to open.
-    baseline_temp : float
-        Baseline temperature in °C to apply on all surfaces.
-    beep : bool, optional
-        Whether to emit a beep on stimulation start. Defaults to ``False``.
-    """
+def initialize_thermode(port_name, baseline_temp):
+    """Initialize the thermode device and set its baseline temperature."""
     print(f"Initializing Thermode on {port_name}...")
     try:
-        thermode = tcsii_serial(port_name, beep=beep)
+        thermode = tcsii_serial(port_name, beep=True)
         thermode.set_baseline(baseline_temp)
-        print(
-            f"SUCCESS: Thermode initialized on {port_name} with baseline {baseline_temp}°C."
-        )
+        print(f"SUCCESS: Thermode initialized on {port_name} with baseline {baseline_temp}°C.")
         return thermode
     except Exception as e:
         print(f"FATAL ERROR: Thermode initialization failed on {port_name}: {e}")
