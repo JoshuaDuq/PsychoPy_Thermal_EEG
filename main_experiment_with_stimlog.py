@@ -56,8 +56,15 @@ exp_name = f"ThermalPainEEGFMRI_run{run_number}"
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 
+# Directory for outputs
+participant_dir = os.path.join(_thisDir, "data", exp_info["participant"])
+os.makedirs(participant_dir, exist_ok=True)
+base_filename = f"{exp_info['participant']}_{exp_name}_{exp_info['date']}"
+
 # --- Initialize Hardware ---
-thermode = hw.initialize_thermode(exp_info["com_thermode"], config.BASELINE_TEMP)
+thermode = hw.initialize_thermode(
+    exp_info["com_thermode"], config.BASELINE_TEMP
+)
 trigger_port = hw.initialize_trigger_port(exp_info["com_trigger"])
 rcs = hw.initialize_eeg_rcs(
     host_ip=exp_info["eeg_ip"],
@@ -292,13 +299,19 @@ for this_trial in main_loop:
                 linestyle=styles[idx],
             )
         plt.axhline(current_temp, label="target", linestyle="--", color="red")
-        plt.axhline(config.BASELINE_TEMP, label="baseline", linestyle="--", color="green")
+        plt.axhline(
+            config.BASELINE_TEMP, label="baseline", linestyle="--", color="green"
+        )
         plt.xlabel("Time (s)")
         plt.ylabel("Temperature (°C)")
         plt.legend()
         plt.tight_layout()
-        plt.show(block=False)
-        plt.pause(0.001)
+        plot_path = os.path.join(
+            participant_dir,
+            f"{base_filename}_trial{current_loop_index + 1}_TempPlot.png",
+        )
+        plt.savefig(plot_path)
+        plt.close(fig)
 
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
