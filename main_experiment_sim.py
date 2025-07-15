@@ -433,6 +433,8 @@ for this_trial in main_loop:
     logger.debug("TRIG_VAS_ON (%s) code queued.", config.TRIG_VAS_ON.hex())
     continue_routine = True
     waiting_for_release = False
+    move_was_held = False
+    confirm_ready_time = vas_start_time
     
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -477,11 +479,18 @@ for this_trial in main_loop:
             main_loop.finished = True
             continue_routine = False
 
-        confirm_pressed = "space" in action_names
         move_held = any(
             k.name in ["m", "n"] and k.duration is None for k in keys
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
+
+        if move_was_held and not move_held:
+            confirm_ready_time = core.monotonicClock.getTime()
+        move_was_held = move_held
+
+        confirm_pressed = any(
+            k.name == "space" and k.tDown >= confirm_ready_time for k in keys
+        )
 
         if confirm_pressed and not move_held:
             continue_routine = False
