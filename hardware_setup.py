@@ -4,8 +4,6 @@ import serial
 from psychopy import core
 from pytcsii import tcsii_serial
 from psychopy.hardware import brainproducts
-
-# Import trigger definitions from your config file
 from config import TRIG_RESET
 
 def initialize_thermode(port_name, baseline_temp):
