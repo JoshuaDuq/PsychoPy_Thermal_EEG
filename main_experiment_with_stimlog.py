@@ -147,7 +147,7 @@ else:
 # --- Welcome Routine ---
 welcome_text = (
     "Merci de participer \u00e0 cette \u00e9tude.\n\n"
-    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur O (Oui) ou N (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches N (gauche) et M (droite), puis en confirmant avec la barre ESPACE.\n\n"
+    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur O (Oui) ou N (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches 2 (gauche) et 3 (droite), puis en confirmant avec la touche 1.\n\n"
     "Veuillez rester immobile, vous concentrer sur vos sensations et r\u00e9pondre honn\u00eatement. L\u2019exp\u00e9rience peut \u00eatre arr\u00eat\u00e9e en tout temps, seulement si n\u00e9cessaire. Avez-vous des questions avant de commencer ?"
 )
 
@@ -159,10 +159,10 @@ continue_routine = True
 while continue_routine:
     welcome_stim.draw()
     win.flip()
-    keys = event.getKeys(keyList=["space", "escape"])
+    keys = event.getKeys(keyList=["1", "escape"])
     if "escape" in keys:
         core.quit()
-    if "space" in keys:
+    if "1" in keys:
         continue_routine = False
 
 
@@ -198,10 +198,10 @@ for this_trial in main_loop:
     while iti_timer.getTime() > 0:
         fixation_cross.draw()
         win.flip()
-        keys = event.getKeys(keyList=["space", "escape"])
+        keys = event.getKeys(keyList=["1", "escape"])
         if "escape" in keys:
             core.quit()
-        if "space" in keys:
+        if "1" in keys:
             break
 
     iti_end_time = core.monotonicClock.getTime()
@@ -414,15 +414,15 @@ for this_trial in main_loop:
     while continue_routine:
         increment = config.VAS_SPEED_UNITS_PER_SEC * frame_dur
 
-        keys = kb.getKeys(["m", "n", "space", "s", "escape"], waitRelease=False, clear=False)
+        keys = kb.getKeys(["3", "2", "1", "s", "escape"], waitRelease=False, clear=False)
 
-        move_keys = [k for k in keys if k.name in ["m", "n"]]
+        move_keys = [k for k in keys if k.name in ["3", "2"]]
         if move_keys and move_keys[-1].duration is None:
             key = move_keys[-1].name
-            if key == "m":
+            if key == "3":
                 current_pos = min(100.0, current_pos + increment)
                 interaction_occurred = True
-            elif key == "n":
+            elif key == "2":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
 
@@ -433,8 +433,8 @@ for this_trial in main_loop:
             main_loop.finished = True
             continue_routine = False
 
-        confirm_pressed = "space" in action_names
-        move_held = any(k.name in ["m", "n"] and k.duration is None for k in keys)
+        confirm_pressed = "1" in action_names
+        move_held = any(k.name in ["3", "2"] and k.duration is None for k in keys)
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
         if confirm_pressed and not move_held:
