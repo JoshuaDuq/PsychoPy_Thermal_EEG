@@ -159,7 +159,7 @@ while continue_wait:
     if "escape" in keys:
         core.quit()
     press_count += keys.count("5")
-    if press_count >= 5:
+    if press_count >= 1:
         continue_wait = False
 
 scanner_wait_end = core.monotonicClock.getTime()
