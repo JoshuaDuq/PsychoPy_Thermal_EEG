@@ -23,7 +23,7 @@ exp_info = {
     "date": data.getDateStr(),
     "com_trigger": "COM17",
     "eeg_ip": "192.168.1.2",
-    "eeg_workspace": "C:\\Users\\labmp-eeg\\Desktop\\workspace\\workspace.rwksp"  # Change this path
+    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI-2025.rwksp"  # Change this path
 }
 
 dlg = gui.DlgFromDict(dictionary=exp_info, title="5-Min Baseline EEG")
