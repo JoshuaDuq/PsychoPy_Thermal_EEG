@@ -397,9 +397,9 @@ for this_trial in main_loop:
             continue_routine = False
 
     pain_response = -1
-    if painKey.keys == "o":
+    if painKey.keys == "2":
         pain_response = 1
-    elif painKey.keys == "n":
+    elif painKey.keys == "3":
         pain_response = 0
     thisExp.addData("pain_question_response_coded", pain_response)
 
@@ -489,13 +489,13 @@ for this_trial in main_loop:
         )
 
         # Movement keys rely on the last event and require the key to still be held
-        move_keys = [k for k in keys if k.name in ["3", "2"]]
+        move_keys = [k for k in keys if k.name in ["2", "3"]]
         if move_keys and move_keys[-1].duration is None:
             key = move_keys[-1].name
-            if key == "3":
+            if key == "2":
                 current_pos = min(100.0, current_pos + increment)
                 interaction_occurred = True
-            elif key == "2":
+            elif key == "3":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
 
@@ -511,7 +511,7 @@ for this_trial in main_loop:
 
         confirm_pressed = "1" in action_names
         move_held = any(
-            k.name in ["3", "2"] and k.duration is None for k in keys
+            k.name in ["2", "3"] and k.duration is None for k in keys
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
