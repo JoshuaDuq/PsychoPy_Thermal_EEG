@@ -324,7 +324,7 @@ for this_trial in main_loop:
     while continue_routine:
         pain_question_stim.draw()
         win.flip()
-        keys = painKey.getKeys(keyList=["2", "3", "escape"], waitRelease=False)
+        keys = painKey.getKeys(keyList=["2", "3", "escape"], waitRelease=True)
         if keys:
             if "escape" in [k.name for k in keys]:
                 core.quit()
@@ -399,7 +399,7 @@ for this_trial in main_loop:
     kb = keyboard.Keyboard()
     ignore_until_release = {
         k.name
-        for k in kb.getKeys([config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY], waitRelease=False)
+        for k in kb.getKeys([config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY], waitRelease=True)
     }
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
