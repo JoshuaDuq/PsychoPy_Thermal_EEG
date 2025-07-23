@@ -98,7 +98,7 @@ kb = keyboard.Keyboard()
 event.clearEvents()
 fixation_cross = visual.TextStim(win, text="+", height=0.1, color="white")
 pain_question_stim = visual.TextStim(
-    win, text="Était-ce douloureux? (Oui=1/Non=2)", height=0.07, color="white"
+    win, text="Était-ce douloureux? (Oui=2/Non=3)", height=0.07, color="white"
 )
 
 # --- Prepare Data Collection ---
@@ -172,7 +172,7 @@ thisExp.addData(
 # --- Welcome Routine ---
 welcome_text = (
     "Merci de participer \u00e0 cette \u00e9tude.\n\n"
-    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur 1 (Oui) ou 2 (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches 2 (gauche) et 3 (droite), puis en confirmant avec la touche 1.\n\n"
+    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur 2 (Oui) ou 3 (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches 2 (gauche) et 3 (droite), puis en confirmant avec la touche 1.\n\n"
     "Veuillez rester immobile, vous concentrer sur vos sensations et r\u00e9pondre honn\u00eatement. L\u2019exp\u00e9rience peut \u00eatre arr\u00eat\u00e9e en tout temps, seulement si n\u00e9cessaire. Avez-vous des questions avant de commencer ?"
 )
 welcome_stim = visual.TextStim(
@@ -343,7 +343,7 @@ for this_trial in main_loop:
     while continue_routine:
         pain_question_stim.draw()
         win.flip()
-        keys = painKey.getKeys(keyList=["1", "2", "escape"], waitRelease=False)
+        keys = painKey.getKeys(keyList=["2", "3", "escape"], waitRelease=False)
         if keys:
             if "escape" in [k.name for k in keys]:
                 core.quit()
