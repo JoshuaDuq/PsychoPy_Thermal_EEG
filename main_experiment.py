@@ -169,25 +169,6 @@ thisExp.addData(
     "scanner_wait_duration", round(scanner_wait_end - scanner_wait_start, 4)
 )
 
-# --- Welcome Routine ---
-welcome_text = (
-    "Merci de participer \u00e0 cette \u00e9tude.\n\n"
-    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur 2 (Oui) ou 3 (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches 2 (gauche) et 3 (droite), puis en confirmant avec la touche 1.\n\n"
-    "Veuillez rester immobile, vous concentrer sur vos sensations et r\u00e9pondre honn\u00eatement. L\u2019exp\u00e9rience peut \u00eatre arr\u00eat\u00e9e en tout temps, seulement si n\u00e9cessaire. Avez-vous des questions avant de commencer ?"
-)
-welcome_stim = visual.TextStim(
-    win, text=welcome_text, font="Arial", height=0.04, wrapWidth=1.2, color="white"
-)
-continue_routine = True
-while continue_routine:
-    welcome_stim.draw()
-    win.flip()
-    keys = event.getKeys(keyList=["1", "escape"])
-    if "escape" in keys:
-        core.quit()
-    if "1" in keys:
-        continue_routine = False
-
 # --- Main Experiment Loop ---
 main_loop = data.TrialHandler(
     nReps=1,
