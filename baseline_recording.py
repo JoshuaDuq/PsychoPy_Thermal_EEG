@@ -26,7 +26,7 @@ exp_info = {
     "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI-2025-workspace.rwksp"  # Change this path
 }
 
-dlg = gui.DlgFromDict(dictionary=exp_info, title="5-Min Baseline EEG")
+dlg = gui.DlgFromDict(dictionary=exp_info, title="10-Min Baseline EEG")
 if not dlg.OK:
     core.quit()
 
@@ -119,7 +119,7 @@ thisExp.addData(
 # 5. Baseline Period
 # -----------------------------------------------------------------
 baseline_start_time = {"t": None}
-baseline_timer = core.CountdownTimer(300.0)  # 5 minutes
+baseline_timer = core.CountdownTimer(600.0)  # 5 minutes
 
 def mark_baseline_start():
     baseline_start_time["t"] = core.monotonicClock.getTime()
