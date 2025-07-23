@@ -351,9 +351,9 @@ for this_trial in main_loop:
             continue_routine = False
 
     pain_response = -1
-    if painKey.keys == "o":
+    if painKey.keys == "2":
         pain_response = 1
-    elif painKey.keys == "n":
+    elif painKey.keys == "3":
         pain_response = 0
     thisExp.addData("pain_question_response_coded", pain_response)
 
@@ -416,7 +416,7 @@ for this_trial in main_loop:
     # still physically holding '3' or '2' when the new scale appears, we ignore
     # that key until it is released once.
     kb = keyboard.Keyboard()
-    ignore_until_release = {k.name for k in kb.getKeys(["3", "2"], waitRelease=False)}
+    ignore_until_release = {k.name for k in kb.getKeys(["2", "3"], waitRelease=False)}
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
 
@@ -463,7 +463,7 @@ for this_trial in main_loop:
 
         # Update held movement keys
         for k in keys:
-            if k.name in ["3", "2"]:
+            if k.name in ["2", "3"]:
                 if k.duration is None:
                     held_moves.add(k.name)
                 else:
@@ -473,10 +473,10 @@ for this_trial in main_loop:
         move_keys = [k for k in keys if k.name in ["2", "3"]]
         if move_keys and move_keys[-1].duration is None:
             key = move_keys[-1].name
-            if key == "3":
+            if key == "2":
                 current_pos = min(100.0, current_pos + increment)
                 interaction_occurred = True
-            elif key == "2":
+            elif key == "3":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
 
