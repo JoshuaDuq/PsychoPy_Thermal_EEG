@@ -32,5 +32,5 @@ VAS_MAX_DURATION_SECS = 10.0
 VAS_SAMPLING_INTERVAL_SECS = 0.2
 
 # Key mapping for moving the VAS cursor
-VAS_LEFT_KEY = "num_2"
-VAS_RIGHT_KEY = "num_3"
+VAS_LEFT_KEY = "2"
+VAS_RIGHT_KEY = "3"
