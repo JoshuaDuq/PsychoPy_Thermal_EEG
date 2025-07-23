@@ -30,7 +30,7 @@ exp_info = {
     "com_thermode": "COM15",
     "com_trigger": "COM7",
     "eeg_ip": "192.168.1.2",
-    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI_JOSH_workspace_REAL.rwksp",  # IMPORTANT: Change this path
+    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI_2025.rwksp",  # IMPORTANT: Change this path
     "run_number": "1",
 }
 dlg = gui.DlgFromDict(dictionary=exp_info, title="Thermal Pain Experiment")
