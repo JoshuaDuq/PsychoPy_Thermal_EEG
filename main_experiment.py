@@ -426,6 +426,7 @@ for this_trial in main_loop:
     continue_routine = True
     waiting_for_release = False
     held_moves = set()
+    held_move_key = None
 
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -470,8 +471,7 @@ for this_trial in main_loop:
                 continue
             filtered_keys.append(k)
         keys = filtered_keys
-
-        # Update held movement keys
+        
         for k in keys:
             if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]:
                 if k.duration is None:
@@ -479,16 +479,20 @@ for this_trial in main_loop:
                 else:
                     held_moves.discard(k.name)
 
-        # Movement keys rely on the last event and require the key to still be held
-        move_keys = [k for k in keys if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]]
-        if move_keys and move_keys[-1].duration is None:
-            key = move_keys[-1].name
-            if key == config.VAS_RIGHT_KEY:
-                current_pos = min(100.0, current_pos + increment)
-                interaction_occurred = True
-            elif key == config.VAS_LEFT_KEY:
-                current_pos = max(0.0, current_pos - increment)
-                interaction_occurred = True
+
+        # Ensure only one movement key is active at a time
+        if held_move_key not in held_moves:
+            held_move_key = None
+        if held_move_key is None and len(held_moves) == 1:
+            held_move_key = next(iter(held_moves))
+
+        # Move cursor based on the single active key
+        if held_move_key == config.VAS_RIGHT_KEY:
+            current_pos = min(100.0, current_pos + increment)
+            interaction_occurred = True
+        elif held_move_key == config.VAS_LEFT_KEY:
+            current_pos = max(0.0, current_pos - increment)
+            interaction_occurred = True
 
         # Check for confirmation or abort actions
         action_names = {k.name for k in keys}
@@ -499,12 +503,9 @@ for this_trial in main_loop:
             continue_routine = False
 
         confirm_pressed = "1" in action_names
-        move_held = any(
-            k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]
-            and k.duration is None
-            for k in keys
-        )
+        move_held = held_move_key is not None
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
+
 
         if confirm_pressed and not move_held:
             continue_routine = False
