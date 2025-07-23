@@ -30,3 +30,7 @@ ITI_DURATION_RANGE = (15, 20) # Min and Max ITI in seconds
 VAS_SPEED_UNITS_PER_SEC = 22.0
 VAS_MAX_DURATION_SECS = 10.0
 VAS_SAMPLING_INTERVAL_SECS = 0.2
+
+# Key mapping for moving the VAS cursor
+VAS_LEFT_KEY = "2"
+VAS_RIGHT_KEY = "3"
