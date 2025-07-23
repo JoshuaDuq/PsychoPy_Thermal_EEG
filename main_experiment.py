@@ -28,9 +28,9 @@ exp_info = {
     "participant": "sub0000",
     "date": data.getDateStr(),
     "com_thermode": "COM15",
-    "com_trigger": "COM17",
+    "com_trigger": "COM7",
     "eeg_ip": "192.168.1.2",
-    "eeg_workspace": "C:\\Users\\labmp-eeg\\Desktop\\workspace\\workspace.rwksp",  # IMPORTANT: Change this path
+    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI-2025.rwksp",  # IMPORTANT: Change this path
     "run_number": "1",
 }
 dlg = gui.DlgFromDict(dictionary=exp_info, title="Thermal Pain Experiment")
