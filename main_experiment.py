@@ -27,10 +27,10 @@ RUN_LISTS_PATH = os.path.join(os.path.dirname(__file__), "trial_lists.json")
 exp_info = {
     "participant": "sub0000",
     "date": data.getDateStr(),
-    "com_thermode": "COM15",
+    "com_thermode": "COM3",
     "com_trigger": "COM7",
     "eeg_ip": "192.168.1.2",
-    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI-2025.rwksp",  # IMPORTANT: Change this path
+    "eeg_workspace": "C:\\Users\\labmp\\Desktop\\EEG_FMRI-2025-workspace.rwksp",  # IMPORTANT: Change this path
     "run_number": "1",
 }
 dlg = gui.DlgFromDict(dictionary=exp_info, title="Thermal Pain Experiment")
@@ -98,7 +98,7 @@ kb = keyboard.Keyboard()
 event.clearEvents()
 fixation_cross = visual.TextStim(win, text="+", height=0.1, color="white")
 pain_question_stim = visual.TextStim(
-    win, text="Était-ce douloureux? (o/n)", height=0.07, color="white"
+    win, text="Était-ce douloureux? (Oui=2/Non=3)", height=0.07, color="white"
 )
 
 # --- Prepare Data Collection ---
@@ -159,7 +159,7 @@ while continue_wait:
     if "escape" in keys:
         core.quit()
     press_count += keys.count("5")
-    if press_count >= 1:
+    if press_count >= 5:
         continue_wait = False
 
 scanner_wait_end = core.monotonicClock.getTime()
@@ -168,25 +168,6 @@ thisExp.addData("scanner_wait_presses", press_count)
 thisExp.addData(
     "scanner_wait_duration", round(scanner_wait_end - scanner_wait_start, 4)
 )
-
-# --- Welcome Routine ---
-welcome_text = (
-    "Merci de participer \u00e0 cette \u00e9tude.\n\n"
-    "Vous recevrez des stimulations thermiques (chaleur, parfois douloureuse) sur l\u2019avant-bras, r\u00e9parties sur plusieurs essais. Chaque essai commencera par une croix de fixation \u00e0 regarder. Ensuite, une chaleur sera appliqu\u00e9e. Apr\u00e8s chaque stimulation, vous devrez indiquer si vous avez ressenti de la douleur en appuyant sur O (Oui) ou N (Non). Ensuite, vous \u00e9valuerez l\u2019intensit\u00e9 de la chaleur (si vous n\u2019avez pas eu mal) ou de la douleur (si vous en avez eu), en d\u00e9pla\u00e7ant un curseur avec les touches 2 (gauche) et 3 (droite), puis en confirmant avec la touche 1.\n\n"
-    "Veuillez rester immobile, vous concentrer sur vos sensations et r\u00e9pondre honn\u00eatement. L\u2019exp\u00e9rience peut \u00eatre arr\u00eat\u00e9e en tout temps, seulement si n\u00e9cessaire. Avez-vous des questions avant de commencer ?"
-)
-welcome_stim = visual.TextStim(
-    win, text=welcome_text, font="Arial", height=0.04, wrapWidth=1.2, color="white"
-)
-continue_routine = True
-while continue_routine:
-    welcome_stim.draw()
-    win.flip()
-    keys = event.getKeys(keyList=["1", "escape"])
-    if "escape" in keys:
-        core.quit()
-    if "1" in keys:
-        continue_routine = False
 
 # --- Main Experiment Loop ---
 main_loop = data.TrialHandler(
@@ -343,7 +324,7 @@ for this_trial in main_loop:
     while continue_routine:
         pain_question_stim.draw()
         win.flip()
-        keys = painKey.getKeys(keyList=["o", "n", "escape"], waitRelease=False)
+        keys = painKey.getKeys(keyList=["2", "3", "escape"], waitRelease=True)
         if keys:
             if "escape" in [k.name for k in keys]:
                 core.quit()
@@ -351,9 +332,9 @@ for this_trial in main_loop:
             continue_routine = False
 
     pain_response = -1
-    if painKey.keys == "o":
+    if painKey.keys == "2":
         pain_response = 1
-    elif painKey.keys == "n":
+    elif painKey.keys == "3":
         pain_response = 0
     thisExp.addData("pain_question_response_coded", pain_response)
 
@@ -376,6 +357,7 @@ for this_trial in main_loop:
     vas_rating_trace, vas_time_trace = [], []
     current_pos = round(np.random.uniform(0, 100), 1)
     initial_pos = current_pos
+    prev_pos = current_pos
     interaction_occurred = False
     vas_timer = core.Clock()
     last_sample_time = 0.0
@@ -412,12 +394,12 @@ for this_trial in main_loop:
 
     # Start the VAS with a fresh keyboard instance so any held keys from the
     # previous trial cannot influence the slider at onset. If the participant is
-    # still physically holding the VAS movement keys when the new scale appears,
-    # we ignore that key until it is released once.
+    # still physically holding '3' or '2' when the new scale appears, we ignore
+    # that key until it is released once.
     kb = keyboard.Keyboard()
     ignore_until_release = {
         k.name
-        for k in kb.getKeys([config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY], waitRelease=False)
+        for k in kb.getKeys([config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY], waitRelease=True)
     }
     kb.clearEvents()
     event.clearEvents(eventType="keyboard")
@@ -426,7 +408,6 @@ for this_trial in main_loop:
     continue_routine = True
     waiting_for_release = False
     held_moves = set()
-    held_move_key = None
 
     def trigger_vas_onset():
         if trigger_port and trigger_port.is_open:
@@ -471,7 +452,8 @@ for this_trial in main_loop:
                 continue
             filtered_keys.append(k)
         keys = filtered_keys
-        
+
+        # Update held movement keys
         for k in keys:
             if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]:
                 if k.duration is None:
@@ -479,20 +461,18 @@ for this_trial in main_loop:
                 else:
                     held_moves.discard(k.name)
 
+        # Movement keys rely on the last event and require the key to still be held
+        move_keys = [k for k in keys if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]]
+        if move_keys and move_keys[-1].duration is None:
+            key = move_keys[-1].name
+            if key == config.VAS_RIGHT_KEY:
+                current_pos = min(100.0, current_pos + increment)
+                interaction_occurred = True
+            elif key == config.VAS_LEFT_KEY:
+                current_pos = max(0.0, current_pos - increment)
+                interaction_occurred = True
 
-        # Ensure only one movement key is active at a time
-        if held_move_key not in held_moves:
-            held_move_key = None
-        if held_move_key is None and len(held_moves) == 1:
-            held_move_key = next(iter(held_moves))
-
-        # Move cursor based on the single active key
-        if held_move_key == config.VAS_RIGHT_KEY:
-            current_pos = min(100.0, current_pos + increment)
-            interaction_occurred = True
-        elif held_move_key == config.VAS_LEFT_KEY:
-            current_pos = max(0.0, current_pos - increment)
-            interaction_occurred = True
+        pos_changed = current_pos != prev_pos
 
         # Check for confirmation or abort actions
         action_names = {k.name for k in keys}
@@ -503,11 +483,14 @@ for this_trial in main_loop:
             continue_routine = False
 
         confirm_pressed = "1" in action_names
-        move_held = held_move_key is not None
+        move_held = any(
+            k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]
+            and k.duration is None
+            for k in keys
+        )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
-
-        if confirm_pressed and not move_held:
+        if confirm_pressed and not move_held and not pos_changed:
             continue_routine = False
 
         # Update marker position
@@ -538,6 +521,8 @@ for this_trial in main_loop:
 
         if waiting_for_release and not move_held:
             continue_routine = False
+
+        prev_pos = current_pos
 
     # End Routine
     final_rating_raw = current_pos
