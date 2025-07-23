@@ -470,7 +470,7 @@ for this_trial in main_loop:
                     held_moves.discard(k.name)
 
         # Movement keys rely on the last event and require the key to still be held
-        move_keys = [k for k in keys if k.name in ["3", "2"]]
+        move_keys = [k for k in keys if k.name in ["2", "3"]]
         if move_keys and move_keys[-1].duration is None:
             key = move_keys[-1].name
             if key == "3":
@@ -492,7 +492,7 @@ for this_trial in main_loop:
 
         confirm_pressed = "1" in action_names
         move_held = any(
-            k.name in ["3", "2"] and k.duration is None for k in keys
+            k.name in ["2", "3"] and k.duration is None for k in keys
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
