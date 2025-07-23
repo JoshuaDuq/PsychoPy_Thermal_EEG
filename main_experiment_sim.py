@@ -422,6 +422,7 @@ for this_trial in main_loop:
     vas_rating_trace, vas_time_trace = [], []
     current_pos = round(np.random.uniform(0, 100), 1)
     initial_pos = current_pos
+    prev_pos = current_pos
     interaction_occurred = False
     vas_timer = core.Clock()
     last_sample_time = 0.0
@@ -497,6 +498,8 @@ for this_trial in main_loop:
             elif key == "2":
                 current_pos = max(0.0, current_pos - increment)
                 interaction_occurred = True
+
+        pos_changed = current_pos != prev_pos
                 
         # Check for confirmation or abort actions
         action_names = {k.name for k in keys}
@@ -512,7 +515,7 @@ for this_trial in main_loop:
         )
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
 
-        if confirm_pressed and not move_held:
+        if confirm_pressed and not move_held and not pos_changed:
             continue_routine = False
             
         # Update marker position
@@ -542,6 +545,8 @@ for this_trial in main_loop:
 
         if waiting_for_release and not move_held:
             continue_routine = False
+
+        prev_pos = current_pos
 
     # End Routine
     final_rating_raw = current_pos
