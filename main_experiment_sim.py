@@ -191,7 +191,7 @@ else:
 scanner_wait_start = core.monotonicClock.getTime()
 thisExp.addData("scanner_wait_start_time", scanner_wait_start)
 
-scanner_text = "En attente de l'initialisation de l'IRM. Merci de patienter."
+scanner_text = "En attente de l'IRM. Merci de patienter."
 scanner_stim = visual.TextStim(
     win, text=scanner_text, font="Arial", height=0.04, wrapWidth=1.2, color="white"
 )
