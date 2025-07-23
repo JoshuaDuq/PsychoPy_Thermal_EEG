@@ -86,6 +86,35 @@ if rcs:
 else:
     logger.warning("EEG RCS unavailable; recording must be started manually.")
 
+
+# --- Wait for MRI Initialization ---
+scanner_wait_start = core.monotonicClock.getTime()
+thisExp.addData("scanner_wait_start_time", scanner_wait_start)
+
+scanner_text = "En attente de l'IRM. Merci de patienter."
+scanner_stim = visual.TextStim(
+    win, text=scanner_text, font="Arial", height=0.04, wrapWidth=1.2, color="white"
+)
+press_count = 0
+event.clearEvents()
+continue_wait = True
+while continue_wait:
+    scanner_stim.draw()
+    win.flip()
+    keys = event.getKeys(keyList=["5", "escape"])
+    if "escape" in keys:
+        core.quit()
+    press_count += keys.count("5")
+    if press_count >= 5:
+        continue_wait = False
+
+scanner_wait_end = core.monotonicClock.getTime()
+thisExp.addData("scanner_wait_end_time", scanner_wait_end)
+thisExp.addData("scanner_wait_presses", press_count)
+thisExp.addData(
+    "scanner_wait_duration", round(scanner_wait_end - scanner_wait_start, 4)
+)
+
 # -----------------------------------------------------------------
 # 5. Baseline Period
 # -----------------------------------------------------------------
