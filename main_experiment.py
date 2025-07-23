@@ -471,14 +471,14 @@ for this_trial in main_loop:
                 continue
             filtered_keys.append(k)
         keys = filtered_keys
-
-        # Update held movement keys
+        
         for k in keys:
             if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]:
                 if k.duration is None:
                     held_moves.add(k.name)
                 else:
                     held_moves.discard(k.name)
+
 
         # Ensure only one movement key is active at a time
         if held_move_key not in held_moves:
@@ -505,6 +505,7 @@ for this_trial in main_loop:
         confirm_pressed = "1" in action_names
         move_held = held_move_key is not None
         at_boundary = current_pos <= 0.0 or current_pos >= 100.0
+
 
         if confirm_pressed and not move_held:
             continue_routine = False

@@ -497,6 +497,7 @@ for this_trial in main_loop:
             clear=False,
         )
 
+
         # Update held movement keys
         for k in keys:
             if k.name in [config.VAS_RIGHT_KEY, config.VAS_LEFT_KEY]:
@@ -518,7 +519,7 @@ for this_trial in main_loop:
         elif held_move_key == config.VAS_LEFT_KEY:
             current_pos = max(0.0, current_pos - increment)
             interaction_occurred = True
-                
+
         # Check for confirmation or abort actions
         action_names = {k.name for k in keys}
         if "escape" in action_names:
